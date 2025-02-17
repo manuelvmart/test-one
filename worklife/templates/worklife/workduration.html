@@ -4,43 +4,18 @@
 <head>
     <title>My Web Page</title>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{% static 'worklife/style.css' %}">
+    <link rel="stylesheet" href="{% static 'worklife/css/style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        /* Add some basic styling for the modal */
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white; 
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: none;
-        }
-        .custom-header a{
-          color: #000000 !important;
-    text-decoration: none;
-    font-weight: bold !important;
-    padding: 10px !important;
-}
 
-
-.fc-daygrid-day-top a{
-    color:rgb(0, 0, 0) !important;
-}
-
-
-    </style>
 </head>
-<body>
+<!-- onload="startTime()" -->
+<body  >
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
       <a class="navbar-brand" href="{% url 'worklife:index' %}">
-        <img src="{% static 'worklife/images/ingenieria.png' %}" alt="Bootstrap" width="52" height="52" style="margin-right: 10px;">Test One
+        <img src="{% static 'worklife/images/ingenieria.png' %}" alt="logo" width="52" height="52" style="margin-right: 10px;">Test One
       </a>
   
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,115 +24,93 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'worklife:index' %}">Home</a>
+            <a class="nav-link" aria-current="page" href="{% url 'worklife:index' %}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'worklife:workduration' %}">Check in</a>
+            <a class="nav-link active" href="{% url 'worklife:workduration' %}">Check in</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Request</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" >incidents</a>
+            <a class="nav-link" href="{% url 'worklife:incidents' %}">incidents</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link " >Calendar</a>
+            <a class="nav-link " href="{% url 'worklife:calendar' %}">Calendar</a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
-<div id="calendar" class="m-3"></div>
+  
+  <div class="container-fluid text-center mt-3 ">
+    <div class="row " ><div class="col-4">
 
-    <div id="eventModal" class="modal fade" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 id="modalTitle" class="modal-title">Event Details</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div id="modalContent" class="modal-body"></div>
-          </div>
-      </div>
+    </div>
+
+    <div class="col-4  d-flex justify-content-center ">
+      <div class="card text-bg-dark  mt-3" style="width: 200px; height:200px;">
+        <img src="{% static 'worklife/images/worker.png' %}" class="card-img" alt="worker"  width="200" height="200">
+      
+    </div>
   </div>
+    <div class="col-4">
 
-    <script>
-       document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    
-    // Get the modal element
-    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
-    
-    // Function to show modal
-    function showModal(title, content) {
-        const modalElement = document.getElementById('eventModal');
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalContent').innerHTML = content;
-        
-        // Show the modal
-        modal.show();
-    }
-    
-    // Initialize FullCalendar
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-       themeSystem: 'bootstrap5',
-       dayHeaderClassNames: 'custom-header', // Para encabezados
-       eventClassNames: 'custom-event' ,
-        initialView: 'dayGridMonth',
-        events: [{
-            id: 'a',
-            title: 'Estreno Capitan America',
-            start: '2025-02-14',
-            description: 'This is a sample event description',
-           
-        },{
-            id: 'b',
-            title: 'Vacaciones Antonio',
-            start: '2025-02-14',
-            end:'2025-02-20',
-            description: 'This is a sample event description2',
-            backgroundColor: '#70e887',     
-            textColor: '#FFFFFF',          
-            borderColor: '#70e887',         
-           
-        },{
-            id: 'b',
-            title: 'Vacaciones samuel',
-            start: '2025-02-14',
-            end:'2025-02-20',
-            description: 'This is a sample event description2',
-            backgroundColor: '#e8707e',     
-            textColor: '#FFFFFF',          
-            borderColor: '#CC0000',         
-           
-        }],
-        eventClick: function(info) {
-            let content = `
-                <strong>Title:</strong> ${info.event.title}<br>
-                <strong>Date:</strong> ${info.event.start.toLocaleDateString()}<br>
-                <strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
-            `;
-            showModal(info.event.title, content);
-        },
-        eventContent: function(info) {
-        return {
-            html: `<strong>${info.event.title}</strong><br>${info.timeText}`
-        }}
-    });
-    
-    calendar.setOption('height', 700);
-    calendar.render();
-});
+    </div>
 
-const toastTrigger = document.getElementById('liveToastBtn')
-const toastLiveExample = document.getElementById('liveToast')
+    
+  
+  </div>
+    <div class="row">
+      <h5 class="m-3">Working day Duration:</h5></div>
+    <div class="row">
+    <div class="col-4"></div>
 
-if (toastTrigger) {
-  const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
-  toastTrigger.addEventListener('click', () => {
-    toastBootstrap.show()
-  })
-}
-    </script>
+    <div class="col-4 mb-3">
+      <div class="card text-bg-light">
+        <div class="card-body">
+          <div id="timer">03:58:10</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="col-4"></div>
+  </div>
+    
+    </div>
+    <div class="row">
+      <div class="col-4"></div>
+      <!-- <button type="button" class="btn btn-success">Check In</button> -->
+      <div class="col-4 text-center ">
+        <button type="button" class="btn btn-secondary mx-3">Break</button>
+        <button type="button" class="btn btn-danger">Clock Out</button>
+
+      </div>
+      <div class="col-4"> </div>
+      
+     
+
+
+    </div>
+ 
+  
+
+ <script>
+  function startTime() {
+    const today = new Date();
+    let h = today.getHours();
+    let m = today.getMinutes();
+    let s = today.getSeconds();
+    m = checkTime(m);
+    s = checkTime(s);
+    document.getElementById('timer').innerHTML =  h + ":" + m + ":" + s;
+    setTimeout(startTime, 1000);
+  }
+  
+  function checkTime(i) {
+    if (i < 10) {i = "0" + i};  
+    return i;
+  }
+  </script>
 </body>
 </html>

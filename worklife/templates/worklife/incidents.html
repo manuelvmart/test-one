@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Incidents</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'worklife/css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* Add some basic styling for the modal */
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white; 
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .custom-header a{
+          color: #000000 !important;
+    text-decoration: none;
+    font-weight: bold !important;
+    padding: 10px !important;
+}
+
+
+.fc-daygrid-day-top a{
+    color:rgb(0, 0, 0) !important;
+}
+
+
+    </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'worklife:index' %}">
+        <img src="{% static 'worklife/images/ingenieria.png' %}" alt="Bootstrap" width="52" height="52" style="margin-right: 10px;">Test One
+      </a>
+  
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link " aria-current="page" href="{% url 'worklife:index' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'worklife:workduration' %}">Check in</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'worklife:requestvi' %}">Request</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'worklife:incidents' %}">incidents</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"  href="{% url 'worklife:calendar' %}">Calendar</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+<div id="calendar" class="m-3"></div>
+
+    <div id="eventModal" class="modal fade" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 id="modalTitle" class="modal-title">Event Details</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div id="modalContent" class="modal-body"></div>
+          </div>
+      </div>
+  </div>
+
+    <script>
+       document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+    // Get the modal element
+    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    
+    // Function to show modal
+    function showModal(title, content) {
+        const modalElement = document.getElementById('eventModal');
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalContent').innerHTML = content;
+        
+        // Show the modal
+        modal.show();
+    }
+    
+    // Initialize FullCalendar
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+       themeSystem: 'bootstrap5',
+       dayHeaderClassNames: 'custom-header', // Para encabezados
+       eventClassNames: 'custom-event' ,
+        initialView: 'timeGrid',
+        events: [{
+            id: 'a',
+            title: 'Llego Tarde',
+            start: '2025-02-14T09:30:00',
+            textColor: '#000000',   
+            backgroundColor: '#edff00',  
+            description: 'This is a sample event description',
+           
+        },{
+            id: 'b',
+            title: 'Ausencia Laboral',
+            start: '2025-02-14T12:30:00',
+            end: '2025-02-14T13:30:00',
+            description: 'This is a sample event description2',
+            backgroundColor: '#BE2558',     
+            textColor: '#FFFFFF'      
+           
+        }
+        
+        ,{
+            id: 'b',
+            title: 'Ausencia',
+            start: '2025-02-15',
+            description: 'This is a sample event description2',
+            backgroundColor: '#BE2558',     
+            textColor: '#FFFFFF'      
+           
+        },{
+            id: 'b',
+            title: 'Ausencia',
+            start: '2025-02-16',
+            description: 'This is a sample event description2',
+            backgroundColor: '#e8707e',     
+            textColor: '#FFFFFF',          
+            borderColor: '#CC0000',         
+           
+        }],
+        eventClick: function(info) {
+            let content = `
+                <strong>Title:</strong> ${info.event.title}<br>
+                <strong>Date:</strong> ${info.event.start.toLocaleDateString()}<br>
+                <strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
+            `;
+            showModal(info.event.title, content);
+        },
+        eventContent: function(info) {
+        return {
+            html: `<strong>${info.timeText} ${info.event.title}</strong>`
+        }}
+    });
+    
+    calendar.setOption('height', 700);
+    calendar.render();
+});
+
+const toastTrigger = document.getElementById('liveToastBtn')
+const toastLiveExample = document.getElementById('liveToast')
+
+if (toastTrigger) {
+  const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+  toastTrigger.addEventListener('click', () => {
+    toastBootstrap.show()
+  })
+}
+    </script>
+</body>
+</html>

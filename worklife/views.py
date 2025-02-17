@@ -9,3 +9,12 @@ def index(request):
 
 def workduration(request):
     return render(request,"worklife/workduration.html")
+
+def calendar(request):
+    return render(request,"worklife/calendar.html")
+
+def incidents(request):
+    return render(request,"worklife/incidents.html")
+
+def requestvi(request):
+    return render(request,"worklife/request.html")

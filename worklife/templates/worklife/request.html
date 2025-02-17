@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Test One Project-Request</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{% static 'worklife/css/style.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'worklife:index' %}">
+        <img src="{% static 'worklife/images/ingenieria.png' %}" alt="Bootstrap" width="52" height="52"
+          style="margin-right: 10px;">Test One
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'worklife:index' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'worklife:workduration' %}">Check in</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'worklife:requestvi' %}">Request</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"  href="{% url 'worklife:incidents' %}">incidents</a>
+          </li>
+          <li class="nav-item" >
+            <a class="nav-link" href="{% url 'worklife:calendar' %}">Calendar</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <h6 style="margin-top: 18px;" class="text-center">Solicitar Permiso</h6>
+  <div class="container contact-form bg-light">
+    <div class="contact-image">
+        <img src="{% static 'worklife/images/worker.png' %}" alt="rocket_contact"/>
+    </div>
+    <form method="post">
+        <h3>Request Incident</h3>
+       <div class="row">
+            <div class="col-md-6">
+                <div class="form-group ">
+                    <input type="text" name="txtName" class="form-control" placeholder="Your Name *" value="" />
+                </div>
+                <div class="form-group mt-3">
+                    <select class="form-select" aria-label="Default select example">
+                        <option selected>Incident Type </option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                      </select>
+                </div>
+                <div class="form-group mt-3">
+                    <input type="text" name="txtPhone" class="form-control" placeholder="Your Phone Number *" value="" />
+                </div>
+                <div class="form-group mt-3">
+                    <input type="submit" name="btnSubmit" class="btnContact" value="Send Message" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <textarea name="txtMsg" class="form-control" placeholder="Details Or Comments *" style="width: 100%; height: 150px;"></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+ 
+</body>
+
+</html>
