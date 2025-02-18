@@ -72,17 +72,7 @@
             {% if user.is_authenticated %}
             <form method="post" action="{% url 'logout' %}" >
              {% csrf_token %}
-             <button type="submit" class="nav-link" style="
-             background: transparent;
-             border: none;
-             padding: 0;
-             cursor: pointer;
-             outline: none;
-             box-shadow: none;
-             -webkit-appearance: none;
-             -moz-appearance: none;
-             appearance: none;
-         ">
+             <button type="submit" class="transparente2" >
                 <i class=" nav-link visible-link bi bi-box-arrow-right" style="font-size: 1rem;"></i>
               </button>
          </form>

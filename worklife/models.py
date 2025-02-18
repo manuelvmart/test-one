@@ -3,14 +3,29 @@ from django.contrib.auth import get_user_model
 # Create your models here.
 
 class WorkTimePeriod(models.Model):
-                user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
-                date =  models.DateTimeField("WorkTime")
+    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
+    date =  models.DateTimeField("WorkTime", auto_now_add=True)
+
+    @staticmethod
+    def init_work_day(user, _date):
+        worktimeperiod = WorkTimePeriod.objects.create(
+            user=user,
+            date=_date
+        )
+        # states.INIT_...
+        _ = WorkTimeRecord.objects.create(
+            user=user,
+            period=worktimeperiod,
+            datetime=_date,
+            record_type="0"
+        )
+        return worktimeperiod
 
 class WorkTimeRecord(models.Model):
-                user = user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
-                period = models.ForeignKey(WorkTimePeriod, on_delete=models.CASCADE)
-                datetime = models.DateTimeField("Time")
-                record_type = models.CharField(
+    user = user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
+    period = models.ForeignKey(WorkTimePeriod, on_delete=models.CASCADE)
+    datetime = models.DateTimeField("Time")
+    record_type = models.CharField(
         choices=(
             ("0", "Start of working day"),
             ("1", "End of working day"),
@@ -21,7 +36,7 @@ class WorkTimeRecord(models.Model):
                 
 class WorkIncident(models.Model):
                 user  = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
-                incident_type = models.CharField (choices=(("0", "Vacations"), ("2", "Delay"), ("3", "Unjustified absences"), ("3", "Justified absences"), ("4", "Justified absences"), ("5", "Maternity leave"), 
+                incident_type = models.CharField (choices=(("0", "Vacations"), ("2", "Delay"), ("3", "Unjustified absences"), ("4", "Justified absences"), ("5", "Maternity leave"), 
                                                            ("6", "Work Incapacity")),  max_length=1)
                 comments =  models.CharField(max_length=200)
                 incident_start =models.DateTimeField("IncidentStartTime")

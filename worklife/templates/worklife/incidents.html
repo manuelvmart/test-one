@@ -34,6 +34,10 @@
     color:rgb(0, 0, 0) !important;
 }
 
+.fc-event {
+  background-color: #ffea72; 
+  color: white;
+}
 
     </style>
 </head>
@@ -71,17 +75,8 @@
             {% if user.is_authenticated %}
             <form method="post" action="{% url 'logout' %}" >
              {% csrf_token %}
-             <button type="submit" class="nav-link" style="
-             background: transparent;
-             border: none;
-             padding: 0;
-             cursor: pointer;
-             outline: none;
-             box-shadow: none;
-             -webkit-appearance: none;
-             -moz-appearance: none;
-             appearance: none;
-         ">
+             <button type="submit" class="transparente2" 
+            >
                  <i class=" nav-link visible-link bi bi-box-arrow-right" style="font-size: 1rem;"></i>
                 </button>
          </form>
@@ -95,25 +90,28 @@
       </div>
     </div>
   </nav>
-<div id="calendar" class="m-3"></div>
+  <div class="container">
+       <h6 class="text-center mt-4">Aqui Puedes visualizar tus incidencias :</h6>  <p class="text-center mb-2">{{ user.get_username }}</p>
+       <div id="calendar" class="m-3"></div>
 
-    <div id="eventModal" class="modal fade" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 id="modalTitle" class="modal-title">Event Details</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div id="modalContent" class="modal-body"></div>
-          </div>
-      </div>
-  </div>
+       <div id="eventModal" class="modal fade" tabindex="-1">
+         <div class="modal-dialog modal-dialog-centered">
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <h5 id="modalTitle" class="modal-title">Event Details</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                 </div>
+                 <div id="modalContent" class="modal-body"></div>
+             </div>
+         </div>
+     </div>
+
+
+
 
     <script>
-       document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
-    
-    // Get the modal element
+
+         // Get the modal element
     const modal = new bootstrap.Modal(document.getElementById('eventModal'));
     
     // Function to show modal
@@ -126,60 +124,46 @@
         modal.show();
     }
     
+       document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+ 
+    
     // Initialize FullCalendar
     var calendar = new FullCalendar.Calendar(calendarEl, {
        themeSystem: 'bootstrap5',
        dayHeaderClassNames: 'custom-header', // Para encabezados
        eventClassNames: 'custom-event' ,
         initialView: 'timeGrid',
-        events: [{
-            id: 'a',
-            title: 'Llego Tarde',
-            start: '2025-02-14T09:30:00',
-            textColor: '#000000',   
-            backgroundColor: '#edff00',  
-            description: 'This is a sample event description',
-           
-        },{
-            id: 'b',
-            title: 'Ausencia Laboral',
-            start: '2025-02-14T12:30:00',
-            end: '2025-02-14T13:30:00',
-            description: 'This is a sample event description2',
-            backgroundColor: '#BE2558',     
-            textColor: '#FFFFFF'      
-           
-        }
-        
-        ,{
-            id: 'b',
-            title: 'Ausencia',
-            start: '2025-02-15',
-            description: 'This is a sample event description2',
-            backgroundColor: '#BE2558',     
-            textColor: '#FFFFFF'      
-           
-        },{
-            id: 'b',
-            title: 'Ausencia',
-            start: '2025-02-16',
-            description: 'This is a sample event description2',
-            backgroundColor: '#e8707e',     
-            textColor: '#FFFFFF',          
-            borderColor: '#CC0000',         
-           
-        }],
+        headerToolbar: {
+    left: ',timeGridDay,timeGridWeek,dayGridMonth',
+    center: 'title',
+    right: 'prev,next' // Users can click these buttons to switch views
+  },
+        events:{{calendar_events| safe }},
         eventClick: function(info) {
             let content = `
                 <strong>Title:</strong> ${info.event.title}<br>
-                <strong>Date:</strong> ${info.event.start.toLocaleDateString()}<br>
+                <strong>Comenzo:</strong> ${info.event.start.toLocaleDateString()}  ${info.event.start.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        })}<br>
+                
+                <strong>Finalizo:</strong>  ${info.event.end.toLocaleDateString()}  ${info.event.end.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        })}<br>
                 <strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
             `;
             showModal(info.event.title, content);
         },
         eventContent: function(info) {
         return {
-            html: `<strong>${info.timeText} ${info.event.title}</strong>`
+            html: `<strong class="text-dark">${info.timeText} ${info.event.title}</strong>`
         }}
     });
     

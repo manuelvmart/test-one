@@ -10,7 +10,8 @@
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
+
+ <style>
 
   </style>
 </head>
@@ -78,7 +79,7 @@
     </div>
   </nav>
 
-  <h6 style="margin-top: 18px;" class="text-center">Solicitar Permiso</h6>
+  <h5 style="margin-top: 18px;" class="text-center">Solicitar Permiso</h5>
   <div class="container contact-form bg-light">
     <div class="contact-image">
         <img src="{% static 'worklife/images/libro-manual.png' %}" alt="rocket_contact"/>
@@ -93,14 +94,29 @@
                 <div class="form-group mt-3">
                     <select class="form-select" aria-label="Default select example">
                         <option selected>Incident Type </option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
+                        <option value="0">Vacations</option>
+                        <option value="2">Delay</option>
+                        <option value="3">Unjustified absences</option>
+                        <option value="4">Justified absences</option>
+                        <option value="5">Maternity leave</option>
+                        <option value="6">Work Incapacity</option>
                       </select>
                 </div>
                 <div class="form-group mt-3">
-                    <input type="text" name="txtPhone" class="form-control" placeholder="Your Phone Number *" value="" />
+                  <label for="meeting-time" class="form-label">Start Date:</label>
+                  <input 
+                      type="datetime-local"
+                      id="meeting-time"
+                      name="meeting-time"
+                      class="form-control"
+                      value="2018-06-12T19:30"
+                      min="2018-06-07T00:00"
+                      max="2018-06-14T00:00"
+                  />
                 </div>
+                
+                 
+
                 <div class="form-group mt-3">
                     <input type="submit" name="btnSubmit" class="btnContact" value="Send Request" />
                 </div>
