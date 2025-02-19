@@ -9,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from worklife.models import WorkIncident
 from worklife.models import WorkTimePeriod
+from worklife.models import VacationRequest
 from django.db import transaction
 
 
@@ -77,7 +78,16 @@ class CalendarView(LoginRequiredMixin, generic.TemplateView):
                 incident_start=data['start'],
                 incident_end=data['end']
             )
-            
+            # Crear vacation request
+            vacation = VacationRequest.objects.create(
+                incident = incident,
+                user = request.user,
+                vacation_start = data['start'],
+                vacation_end = data['end'],
+                
+                detail = data['description'],
+            )
+
             return JsonResponse({
                 'success': True,
                 'message': 'Incidente guardado exitosamente'
