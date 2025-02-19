@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from worklife.models import WorkIncident
 from worklife.models import WorkTimePeriod
-from worklife.models import WorkTimeRecord
+from django.db import transaction
 
 
 def index(request):
@@ -60,10 +60,34 @@ class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
    
 
 
-@login_required
-def calendar(request):
-    return render(request,"worklife/calendar.html")
+class CalendarView(LoginRequiredMixin, generic.TemplateView):
+     """Vista para manejar el inicio de labores del trabajador"""
+     template_name = 'worklife/calendar.html'
 
+     def post(self, request):
+        try:
+            data = json.loads(request.body)
+            
+          
+            # Crear incidente
+            incident = WorkIncident.objects.create(
+                user=request.user,
+                incident_type=data['type'],
+                comments=data['description'],
+                incident_start=data['start'],
+                incident_end=data['end']
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Incidente guardado exitosamente'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=500)
 
 class IncidentsView(LoginRequiredMixin, generic.ListView):
     template_name = "worklife/incidents.html"

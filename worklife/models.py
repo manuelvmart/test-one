@@ -41,14 +41,14 @@ class WorkIncident(models.Model):
                 comments =  models.CharField(max_length=200)
                 incident_start =models.DateTimeField("IncidentStartTime")
                 incident_end = models.DateTimeField("IncidentEndTime")
-                applied = models.BooleanField(default=False)
+                applied = models.BooleanField(null=True)
 
 class VacationRequest(models.Model):
                 incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE)
                 user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
                 vacation_start = models.DateTimeField("VacationStartTime")
                 vacation_end = models.DateTimeField("VacationEndTime")
-                approved = models.BooleanField(default=False)
+                approved = models.BooleanField(null=True)
                 detail = models.CharField(max_length=200)
 
 
