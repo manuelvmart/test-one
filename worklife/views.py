@@ -14,7 +14,7 @@ from django.db import transaction
 
 
 def index(request):
-  return http
+  return render(request, "worklife/index.html")
 
 
 class WorkDurationView(LoginRequiredMixin, generic.TemplateView):

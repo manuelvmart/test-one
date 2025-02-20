@@ -112,4 +112,9 @@ color:rgb(0, 0, 0) !important;
     width: 1300px ;
     object-fit: cover; }
 
+    .avatar{
+        height: 30px ;
+    width: 30px ; }
+
+
    
