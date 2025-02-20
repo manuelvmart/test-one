@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title%} Work Duration {% endblock %}
+{% block title%} Request {% endblock %}
 
 {% block body %}
 <style>
@@ -216,18 +216,18 @@
     </style>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-  <h5 style="margin-top: 18px;" class="text-center">Solicitar Permiso</h5>
+  <h5 style="margin-top: 18px;" class="text-center">Requests</h5>
   <div class="container-xl">
     <div class="table-responsive">
         <div class="table-wrapper">
             <div class="table-title">
                 <div class="row">
                     <div class="col-sm-4">
-                        <h2>Order <b>Details</b></h2>
+                        <h2>Requests <b>Details</b></h2>
                     </div>
                     <div class="col-sm-8">						
-                        <a href="#" class="btn btn-primary"><i class="material-icons">&#xE863;</i> <span>Refresh List</span></a>
-                        <a href="#" class="btn btn-secondary"><i class="material-icons">&#xE24D;</i> <span>Export to Excel</span></a>
+                        <!----a href="#" class="btn btn-primary"><i class="material-icons">&#xE863;</i> <span>Refresh List</span></a>--------->
+                        <a href="#" class="btn btn-secondary"><i class="material-icons">&#xE24D;</i> <span>Export to Report</span></a>
                     </div>
                 </div>
             </div>
@@ -251,7 +251,7 @@
                             <label>Name</label>
                             <input type="text" class="form-control">
                         </div>
-                        <div class="filter-group">
+                        <!---div class="filter-group">
                             <label>Location</label>
                             <select class="form-control">
                                 <option>All</option>
@@ -261,7 +261,7 @@
                                 <option>New York</option>
                                 <option>Paris</option>								
                             </select>
-                        </div>
+                        </div----->
                         <div class="filter-group">
                             <label>Status</label>
                             <select class="form-control">
@@ -280,11 +280,11 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Customer</th>
-                        <th>Location</th>
-                        <th>Order Date</th>						
+                        <th>staff</th>
+                        <th>Duration</th>
+                        <th>Comments</th>						
                         <th>Status</th>						
-                        <th>Net Amount</th>
+                        <th>Type</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -352,7 +352,13 @@
             </div>
         </div>
     </div>        
-</div>     
+</div>    
+<ul> 
+{% for vacationrequest in vacationrequests %}
+    <li><a href="{% url 'polls:detail' question.id %}">{{ vcation }}</a></li>
+    {% endfor %}
+    </ul>
+
 
 {% endblock %}
 

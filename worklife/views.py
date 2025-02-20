@@ -14,7 +14,7 @@ from django.db import transaction
 
 
 def index(request):
-  return render(request, "worklife/index.html")
+  return http
 
 
 class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
@@ -144,6 +144,8 @@ class IncidentsView(LoginRequiredMixin, generic.ListView):
             events.append(event)
         return json.dumps(events)  
 
-@login_required
-def requestvi(request):
-    return render(request,"worklife/request.html")
+class RequestView(LoginRequiredMixin, generic.ListView):
+     template_name = "worklife/request.html"
+     
+     def get_queryset(self):
+        return VacationRequest.objects.all
