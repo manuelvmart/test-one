@@ -121,12 +121,17 @@
         dayHeaderClassNames: 'custom-header',
         eventClassNames: 'custom-event',
         initialView: 'dayGridMonth',
-        selectable: true, // Habilita la selección
-        selectMirror: true, // Muestra una selección espejo mientras se arrastra
+        selectable: true, selectAllow: function(info) {
+      return info.start >= new Date();
+    },
+        selectMirror: true,
+        weekends: false,
+        dragScroll:true, 
         headerToolbar: {
     left: 'timeGridDay,dayGridMonth',
     center: 'title',
-    right: 'prev,next' // Users can click these buttons to switch views
+    right: 'prev,next',
+
   },
         select: function(info) {
     // Limpiar el formulario antes de establecer valores

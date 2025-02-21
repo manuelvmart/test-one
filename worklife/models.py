@@ -43,6 +43,20 @@ class WorkIncident(models.Model):
                 incident_end = models.DateTimeField("IncidentEndTime")
                 applied = models.BooleanField(null=True)
 
+
+                @property
+                def formatted_incident_type(self):
+                    INCIDENT_TYPES = {
+                        "2": "Delay",
+                        "0": "Vacations",
+                        "3": "Unjustified absences",
+                        "4": "Justified absences",
+                        "5": "Maternity leave",
+                        "6": "Work Incapacity"
+                    }
+                    base_type = self.incident_type
+                    return f"{base_type} ({INCIDENT_TYPES.get(base_type, '')})"
+
 class VacationRequest(models.Model):
                 incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE)
                 user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)

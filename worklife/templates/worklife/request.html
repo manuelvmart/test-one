@@ -8,10 +8,11 @@
         color: #566787;
         background: #f5f5f5;
         font-family: 'Varela Round', sans-serif;
-        font-size: 13px;
+       
     }
     .table-responsive {
         margin: 30px 0;
+        font-size: 13px;
     }
     .table-wrapper {
         min-width: 1000px;
@@ -158,6 +159,16 @@
         text-align: center;
         margin-top: 5px;
     }
+
+    table.table td a.view3 {        
+        width: 35px;
+        height: 35px;
+        color: #2784ff;
+        border: 2px solid;
+        border-radius: 30px;
+        text-align: center;
+        margin-top: 5px;
+    }
     table.table td a.view i {
         font-size: 22px;
         margin: 2px 2px 0 1px;
@@ -166,6 +177,11 @@
         font-size: 22px;
         margin: 2px 2px 0 1px;
     }   
+
+    table.table td a.view3 i {
+        font-size: 20px;
+        margin: 2px 2px 0 1px;
+    }  
     table.table .avatar {
         border-radius: 50%;
         vertical-align: middle;
@@ -312,12 +328,33 @@
                             from: {{ vacationrequest.vacation_start|date:"Y-m-d H:i:s" }}<br>
                             to: {{ vacationrequest.vacation_end|date:"Y-m-d H:i:s" }}
                         </td>
-                        <td> {{ vacationrequest.detail }}</td>                        
-                        <td><span class="status text-success">&bull;</span>{{ vacationrequest.approved }}</td>
-                        <td>Vacation</td>
+                        <td> {{ vacationrequest.detail }}</td>    
+                        {% if vacationrequest.approved == None %}
+                        <td><span class="status text-warning">&bull;</span>Pendiente de Ser aprobada</td>
+                        <td>{{ vacationrequest.incident.formatted_incident_type }}</td>
                         <td><a href="#" class="view" title="View Details" data-toggle="tooltip"><i class="bi bi-x"></i></a>
                             <a href="#" class="view2" title="View Details" data-toggle="tooltip"><i class="bi bi-check-lg"></i></a>
                         </td>
+    {% endif %}          
+
+    {% if vacationrequest.approved == False %}
+    <td><span class="status text-danger">&bull;</span>Denegada</td>
+    <td>{{ vacationrequest.incident.formatted_incident_type }}</td>
+    <td><a href="#" class="view3" title="View Details" data-toggle="tooltip"><i class="bi bi-backpack"></i></a>
+    </td>
+
+{% endif %}         
+
+{% if vacationrequest.approved == True %}
+<td><span class="status text-success">&bull;</span>Aprobada</td>
+<td>{{ vacationrequest.incident.formatted_incident_type }} </td>
+<td><a href="#" class="view3" title="View Details" data-toggle="tooltip"><i class="bi bi-backpack"></i></a>
+</td>
+
+{% endif %}                 
+                       
+                    
+                        
                     </tr>
                     {% endfor %}
                    

@@ -1,7 +1,7 @@
 """Vista para manejo de acciones de inciencias de nomina"""
 import json
 from django.utils import timezone
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.http.response import JsonResponse
 from django.contrib.auth.decorators import login_required
@@ -113,7 +113,17 @@ class IncidentsView(LoginRequiredMixin, generic.ListView):
     def get_calendar_events(self):
         events = []
         for incident in self.get_queryset():
+            if incident.applied == None:
+               class_name = 'pending-event'
+            
+            if incident.applied == False:
+               class_name = 'no-accepted-event'
+            
+            if incident.applied == True:
+               class_name = 'accepted-event'
+            
             event = {
+                'className': class_name,
                 'id': incident.id,
                 'title': incident.incident_type,
                 'start': incident.incident_start.isoformat(),
@@ -141,11 +151,29 @@ class IncidentsView(LoginRequiredMixin, generic.ListView):
             if incident.incident_type == "6":
                event['title'] = "(Work Incapacity)"
             
+            if incident.applied == None:
+              event['status'] = "Requested"
+            
+            if incident.applied == False:
+               event['status'] = "Not applied"
+            
+            if incident.applied == True:
+               event['status'] = "Applied"
+            
             events.append(event)
         return json.dumps(events)  
 
 class RequestView(LoginRequiredMixin, generic.ListView):
      template_name = "worklife/request.html"
-     
+   
      def get_queryset(self):
-        return VacationRequest.objects.all
+        return VacationRequest.objects.select_related('incident').all()
+        
+     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['incidents'] = WorkIncident.objects.all()
+
+        
+
+
+        return context
