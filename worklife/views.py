@@ -1,16 +1,15 @@
 """Vista para manejo de acciones de inciencias de nomina"""
 import json
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import  get_object_or_404, render
 from django.views import generic
 from django.http.response import JsonResponse
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from worklife.models import WorkIncident
-from worklife.models import WorkTimePeriod
-from worklife.models import VacationRequest
-from django.db import transaction
+from worklife.models import VacationRequest,AbsenceRegistry,WorkIncident,WorkTimePeriod
+
 
 
 def index(request):
@@ -125,31 +124,11 @@ class IncidentsView(LoginRequiredMixin, generic.ListView):
             event = {
                 'className': class_name,
                 'id': incident.id,
-                'title': incident.incident_type,
+                'title': incident.formatted_incident_type,
                 'start': incident.incident_start.isoformat(),
                 'end': incident.incident_end.isoformat(),
                 'description': f"Incident #{incident.incident_type} {incident.comments}"
             }
-
-            if incident.incident_type == "2":
-               event['title'] = " (Delay)"
-            
-            if incident.incident_type == "0":
-               event['title'] = "(Vacations)"
-            
-            if incident.incident_type == "3":
-               event['title'] = "(Unjustified absences)"
-            
-
-            if incident.incident_type == "4":
-               event['title'] = " (Justified absences)"
-
-            if incident.incident_type == "5":
-               event['title'] = "(Maternity leave)"
-
-            
-            if incident.incident_type == "6":
-               event['title'] = "(Work Incapacity)"
             
             if incident.applied == None:
               event['status'] = "Requested"
@@ -162,6 +141,154 @@ class IncidentsView(LoginRequiredMixin, generic.ListView):
             
             events.append(event)
         return json.dumps(events)  
+    
+
+
+class AbsencesView(LoginRequiredMixin, generic.ListView):
+            template_name = "worklife/absence.html"
+            
+            def get_queryset(self):
+                return AbsenceRegistry.objects.select_related('incident', 'user').all()
+            
+            def get_context_data(self, **kwargs):
+                context = super().get_context_data(**kwargs)
+                context['calendar_events'] = self.get_calendar_events()
+                return context
+            
+            def get_calendar_events(self):
+                events = []
+                for absence in self.get_queryset():
+                    if absence.incident.incident_type == "3":
+                            class_name = 'unjustified-absences'
+                
+                    if absence.incident.incident_type == "4":
+                            class_name = 'justified-absences'
+                
+                    event = {
+                        'className': class_name,
+                        'id': absence.id,
+                        'user': absence.user.get_full_name(),
+                        'title': absence.incident.formatted_incident_type,
+                        'start': absence.absence_start.isoformat(),
+                        'end': absence.absence_end.isoformat(),
+                        'description': f"Incident #{absence.incident.incident_type} {absence.detail}"
+                    }
+
+                    if absence.incident.applied == None:
+                         event['status'] = "Requested"
+            
+                    if absence.incident.applied == False:
+                         event['status'] = "Not applied"
+                    
+                    if absence.incident.applied== True:
+                        event['status'] = "Applied"
+            
+        
+                    
+                    events.append(event)
+                return json.dumps(events) 
+    
+
+class VacationsView(LoginRequiredMixin, generic.ListView):
+            template_name = "worklife/vacations.html"
+            
+            def get_queryset(self):
+                return WorkIncident.objects.select_related('user').all()
+            
+            def get_context_data(self, **kwargs):
+                context = super().get_context_data(**kwargs)
+                context['calendar_events'] = self.get_calendar_events()
+                return context
+            
+            def get_calendar_events(self):
+                events = []
+                for incident in self.get_queryset():
+                    if incident.applied == None:
+                        class_name = 'pending-event'
+                    
+                    if incident.applied == False:
+                        class_name = 'no-accepted-event'
+                    
+                    if incident.applied == True:
+                         class_name = 'accepted-event'
+                    
+                    if incident.incident_type == "0":
+                        event = {
+                            'className': class_name,
+                            'id': incident.id,
+                            'user': incident.user.get_full_name(),
+                            'title': incident.formatted_incident_type,
+                            'start': incident.incident_start.isoformat(),
+                            'end': incident.incident_end.isoformat(),
+                            'description': f"Incident #{incident.incident_type} {incident.comments}"
+                        }
+
+                    
+                        
+                        if incident.applied == None:
+                            event['status'] = "Requested"
+                        
+                        if incident.applied == False:
+                            event['status'] = "Not applied"
+                        
+                        if incident.applied == True:
+                            event['status'] = "Applied"
+
+                        events.append(event)
+                return json.dumps(events) 
+
+
+
+
+class CincidentsView(LoginRequiredMixin, generic.ListView):
+            template_name = "worklife/cincidents.html"
+            
+            def get_queryset(self):
+                return WorkIncident.objects.select_related('user').all()
+            
+            def get_context_data(self, **kwargs):
+                context = super().get_context_data(**kwargs)
+                context['calendar_events'] = self.get_calendar_events()
+                return context
+            
+            def get_calendar_events(self):
+                events = []
+                for incident in self.get_queryset():
+                    if incident.applied == None:
+                        class_name = 'pending-event'
+                    
+                    if incident.applied == False:
+                        class_name = 'no-accepted-event'
+                    
+                    if incident.applied == True:
+                         class_name = 'accepted-event'
+                    
+                    if incident.incident_type != "0":
+                        event = {
+                            'className': class_name,
+                            'id': incident.id,
+                            'user': incident.user.get_full_name(),
+                            'title': incident.formatted_incident_type,
+                            'start': incident.incident_start.isoformat(),
+                            'end': incident.incident_end.isoformat(),
+                            'description': f"Incident #{incident.incident_type} {incident.comments}"
+                        }
+
+                    
+                        
+                        if incident.applied == None:
+                            event['status'] = "Requested"
+                        
+                        if incident.applied == False:
+                            event['status'] = "Not applied"
+                        
+                        if incident.applied == True:
+                            event['status'] = "Applied"
+
+                        events.append(event)
+                return json.dumps(events) 
+
+
 
 class RequestView(LoginRequiredMixin, generic.ListView):
      template_name = "worklife/request.html"
@@ -173,7 +300,15 @@ class RequestView(LoginRequiredMixin, generic.ListView):
         context = super().get_context_data(**kwargs)
         context['incidents'] = WorkIncident.objects.all()
 
-        
-
-
         return context
+     
+def set_not(request, vacationrequest_id):
+        vacationrequest = get_object_or_404(VacationRequest, pk=vacationrequest_id)
+        
+        if request.method == 'POST':
+            vacationrequest .approved = False
+            vacationrequest.save()
+        
+            return HttpResponseRedirect(reverse("worklife:requestvi"))
+        
+        return HttpResponseRedirect(reverse("worklife:requestvi"))

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title%} Work Vacations {% endblock %}
+
+{% block body %}
+<style> .modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white; 
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: none;
+}
+.custom-header a{
+color: #000000 !important;
+text-decoration: none;
+font-weight: bold !important;
+padding: 10px !important;
+}
+
+
+.fc-daygrid-day-top a{
+color:rgb(0, 0, 0) !important;
+}
+
+.fc-event.accepted-event {
+    background-color: #72ff91;
+    color: white;
+    border-color: rgb(0, 0, 0);
+}
+
+.fc-event.no-accepted-event {
+    background-color: #ff7272;
+    color: white;
+    border-color: rgb(0, 0, 0);
+}
+
+.fc-event.pending-event {
+    background-color: #ffea72;
+    color: black;
+    border-color: rgb(200, 200, 200);
+}
+
+.fc-event.unjustified-absences {
+    background-color: #ffbe5c;
+    color: black;
+    border-color: rgb(200, 200, 200);
+}
+
+.fc-event.justified-absences {
+    background-color: #a8ffe9;
+    color: black;
+    border-color: rgb(200, 200, 200);
+}
+
+
+</style>
+
+
+<div class="container">
+       <h6 class="text-center mt-4">Aqui Puedes visualizar Las Vacaciones de Tus Colaboradores :</h6>  <p class="text-center mb-2">{{ user.get_username }}</p>
+       <div id="calendar" class="m-3"></div>
+
+       <div id="eventModal" class="modal fade" tabindex="-1">
+         <div class="modal-dialog modal-dialog-centered">
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <h5 id="modalTitle" class="modal-title">Event Details</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                 </div>
+                 <div id="modalContent" class="modal-body"></div>
+             </div>
+         </div>
+     </div>
+
+
+     {% endblock %}
+
+     {% block js %}
+
+    <script>
+
+         // Get the modal element
+    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    
+    // Function to show modal
+    function showModal(title, content) {
+        const modalElement = document.getElementById('eventModal');
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalContent').innerHTML = content;
+        
+        // Show the modal
+        modal.show();
+    }
+    
+       document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+ 
+    
+    // Initialize FullCalendar
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+       themeSystem: 'bootstrap5',
+       dayHeaderClassNames: 'custom-header', // Para encabezados
+       eventClassNames: 'custom-event' ,
+        initialView: 'timeGrid',
+        headerToolbar: {
+    left: 'prev,next',
+    center: 'title',
+    right: 'timeGridDay,timeGridWeek,dayGridMonth' // Users can click these buttons to switch views
+  },
+        events:{{calendar_events| safe }},
+        eventClick: function(info) {
+            let content = `
+              <strong>Title:</strong> ${info.event.extendedProps.user}<br>
+                <strong>Title:</strong> ${info.event.title}<br>
+                 <strong>Status:</strong> ${info.event.extendedProps.status}<br>
+                <strong>Comenzo:</strong> ${info.event.start.toLocaleDateString()}  ${info.event.start.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        })}<br>
+                
+                <strong>Finalizo:</strong>  ${info.event.end.toLocaleDateString()}  ${info.event.end.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        })}<br>
+                <strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
+            `;
+            showModal(info.event.title, content);
+        },
+        eventContent: function(info) {
+        return {
+            html: `<strong class="text-dark" style="text-overflow: ellipsis;">${info.timeText} ${info.event.title}</strong>`
+        }}
+    });
+    
+    calendar.setOption('height', 700);
+    calendar.render();
+});
+
+const toastTrigger = document.getElementById('liveToastBtn')
+const toastLiveExample = document.getElementById('liveToast')
+
+if (toastTrigger) {
+  const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+  toastTrigger.addEventListener('click', () => {
+    toastBootstrap.show()
+  })
+}
+    </script>
+    {% endblock %}
