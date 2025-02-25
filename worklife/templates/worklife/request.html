@@ -332,11 +332,14 @@
                         {% if vacationrequest.approved == None %}
                         <td><span class="status text-warning">&bull;</span>Pendiente de Ser aprobada</td>
                         <td>{{ vacationrequest.incident.formatted_incident_type }}</td>
-                        <td><a href="#" class="view" title="View Details" data-toggle="tooltip"><i class="bi bi-x"> 
+                        <td>
                             <form action="{% url 'worklife:set_not' vacationrequest.id  %}" method="post">
                             {% csrf_token %}
-                            <input type="submit" value="Cancelar respuesta" class="btn btn-danger">
-                          </form></i></a>
+                            <button type="submit" class="transparente2">
+                                <a href="#" class="view" title="View Details" data-toggle="tooltip">   <i class="bi bi-x"> </i></a>
+                            </button>
+                          </form>
+                        
                             <a href="#" class="view2" title="View Details" data-toggle="tooltip"><i class="bi bi-check-lg"></i></a>
                         </td>
     {% endif %}          

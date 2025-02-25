@@ -71,5 +71,6 @@ class AbsenceRegistry(models.Model):
                 user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
                 absence_start =  models.DateTimeField("AbsenceStartTime")
                 absence_end  =  models.DateTimeField("AbsenceStartTime")
-                absence_type = ("0", "Unjustified absences"), ("1", "Justified absences")
+                absence_type = models.CharField (choices=(("0", "Unjustified absences"), ("1", "Justified absences"))
+                                                 ,  max_length=1,null=True)
                 detail =  models.CharField(max_length=200)
