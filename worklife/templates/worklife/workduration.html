@@ -47,7 +47,11 @@
       <!-- <button type="button" class="btn btn-success">Check In</button> -->
       <div class="col-4 text-center ">
         {% if user_has_login %}
-            <button type="button" data-state="2" class="btn btn-secondary mx-3">Break</button>
+             {% if user_has_pause %}
+             <button type="button"  id="resumeIn" data-state="0" class="btn btn-secondary mx-3">Resume</button>
+             {% else %}
+             <button type="button"  id="breakIn" data-state="2" class="btn btn-secondary mx-3">Break</button>
+             {% endif %}
             <button type="button" data-state="1" class="btn btn-danger">Clock Out</button>
         {% else %}
             <button type="button" id="checkIn" data-state="0" class="btn btn-success mx-3">Check in</button>
@@ -80,37 +84,70 @@
         return i;
     }
     // startTime();
+// Función para obtener CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
-    let checkInBtn = document.querySelector("#checkIn");
+// Manejador común para ambos botones
+function handleCheckInOut(state) {
+    console.log(`📝 [DATA] - Estado:`, state);
+    
+    fetch(window.location.href, {
+        method: "POST",
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            state
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(response => {
+        if (response.success) {
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error en la petición:', error);
+        alert('Hubo un error al procesar su solicitud. Por favor, intente nuevamente.');
+    });
+}
 
-    checkInBtn.addEventListener("click", function(e){
+document.addEventListener('DOMContentLoaded', () => {
+    const checkInBtn = document.querySelector("#checkIn");
+    const breakInBtn = document.querySelector("#breakIn");
+
+    checkInBtn?.addEventListener("click", function(e) {
         e.preventDefault();
         const state = this.getAttribute('data-state');
-
-        const response = fetch(window.location.href, {
-            method: "POST",
-            headers:  { 
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                state 
-            }),
-
-        })
-        .then(data => {
-            return data.json();
-        })
-        .then(response => {
-            if (response.success){
-                windows.location.reload();
-            }
-        })
-        .catch(err => {
-
-        });
+        handleCheckInOut(state);
     });
+
+    breakInBtn?.addEventListener("click", function(e) {
+        e.preventDefault();
+        const state = this.getAttribute('data-state');
+        handleCheckInOut(state);
+    });
+});
 
   </script>
 {% endblock %}

@@ -58,7 +58,7 @@ class WorkIncident(models.Model):
                     return f"{base_type} ({INCIDENT_TYPES.get(base_type, '')})"
 
 class VacationRequest(models.Model):
-                incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE)
+                incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE, null=True, blank=True)
                 user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
                 vacation_start = models.DateTimeField("VacationStartTime")
                 vacation_end = models.DateTimeField("VacationEndTime")
@@ -67,7 +67,7 @@ class VacationRequest(models.Model):
 
 
 class AbsenceRegistry(models.Model):
-                incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE)
+                incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE, null=True, blank=True)
                 user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
                 absence_start =  models.DateTimeField("AbsenceStartTime")
                 absence_end  =  models.DateTimeField("AbsenceStartTime")

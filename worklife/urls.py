@@ -11,5 +11,6 @@ urlpatterns = [
    path('vacations/', views.VacationsView.as_view(), name='vacations'),
       #path('absences/', views.AbsencesView.as_view(), name='absences'),
     path('requestvi/', views.RequestView.as_view(), name='requestvi'),
-        path('<int:vacationrequest_id>/set_not/', views.set_not, name='set_not'),
+        path('<int:incident_id>/<int:vacationrequest_id>/set_not/', views.set_not, name='set_not'),
+            path('<int:iincident_id>/<int:vacationrequest_id>/set_yes/', views.set_yes, name='set_yes'),
 ]

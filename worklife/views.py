@@ -1,4 +1,5 @@
 """Vista para manejo de acciones de inciencias de nomina"""
+from datetime import timedelta
 import json
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -8,7 +9,8 @@ from django.views import generic
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from worklife.models import VacationRequest,AbsenceRegistry,WorkIncident,WorkTimePeriod
+from worklife.models import VacationRequest,AbsenceRegistry
+from worklife.models import WorkIncident,WorkTimePeriod,WorkTimeRecord
 
 
 
@@ -22,19 +24,23 @@ class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user=self.request.user,
         user_has_login = WorkTimePeriod.objects.filter(
             user=self.request.user,
             date__date=timezone.now()
         ).exists()
 
+    
+
         context.update({
             "user_has_login": user_has_login,
+            "user_has_pause": has_active_break(self.request.user)
         })
 
         return context
     
     def post(self, request):
-        succes = False
+        success = False
         message = "Hubo un error en el procesamiento."
         request_json = json.loads(request.body)
         # states.STARTING_WORK_DAY
@@ -50,6 +56,18 @@ class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
                 if worktimeperiod:
                     success = True
                     message = "Inicio de sesión completado"
+       
+        if request_json.get('state') == '2':
+            WorkTimeRecord.objects.create(
+                 
+            datetime=timezone.now(),
+                    record_type="2",
+         
+            period_id=worktimeperiod.id,
+
+            user_id=request.user,
+          )
+       
 
 
         return JsonResponse({
@@ -302,13 +320,63 @@ class RequestView(LoginRequiredMixin, generic.ListView):
 
         return context
      
-def set_not(request, vacationrequest_id):
+def set_not(request, incident_id, vacationrequest_id):
         vacationrequest = get_object_or_404(VacationRequest, pk=vacationrequest_id)
-        
+        incident = get_object_or_404(WorkIncident, pk=incident_id)
         if request.method == 'POST':
             vacationrequest .approved = False
             vacationrequest.save()
-        
+            
+            incident.applied = False
+            incident.save()
             return HttpResponseRedirect(reverse("worklife:requestvi"))
         
         return HttpResponseRedirect(reverse("worklife:requestvi"))
+
+
+def set_yes(request, iincident_id, vacationrequest_id):
+        vacationrequest = get_object_or_404(VacationRequest, pk=vacationrequest_id)
+        incident = get_object_or_404(WorkIncident, pk=iincident_id)
+        if request.method == 'POST':  
+            vacationrequest .approved = True
+            vacationrequest.save()
+            if incident.incident_type=="3":
+                 AbsenceRegistry.objects.create(
+                        absence_start=vacationrequest.vacation_start,
+                        absence_end=vacationrequest.vacation_end,
+                        detail=vacationrequest.detail,
+                        incident_id=iincident_id,
+                        user_id=vacationrequest.user_id,
+                        absence_type=vacationrequest. incident.incident_type,
+                    )
+            if incident.incident_type=="4":
+                 AbsenceRegistry.objects.create(
+                        absence_start=vacationrequest.vacation_start,
+                        absence_end=vacationrequest.vacation_end,
+                        detail=vacationrequest.detail,
+                        incident_id=iincident_id,
+                        user_id=vacationrequest.user_id,
+                        absence_type=vacationrequest. incident.incident_type,
+                    )
+
+            incident .applied = True
+            incident.save()
+            return HttpResponseRedirect(reverse("worklife:requestvi"))
+        
+        return HttpResponseRedirect(reverse("worklife:requestvi"))
+
+
+
+
+def has_active_break(user):
+    # Buscar el último registro de pausa
+    latest_record = WorkTimeRecord.objects.filter(
+        user_id=user,
+        datetime__date=timezone.now().date(),
+        record_type="2"
+    ).order_by('-datetime').first()
+    
+    if not latest_record:
+        return False  # No hay registros de pausa
+
+    return True
