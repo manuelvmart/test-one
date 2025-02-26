@@ -58,16 +58,30 @@ class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
                     message = "Inicio de sesión completado"
        
         if request_json.get('state') == '2':
+            current_period = WorkTimePeriod.objects.filter(
+            user=self.request.user,
+            date__date=timezone.now()
+        ).first()
             WorkTimeRecord.objects.create(
-                 
             datetime=timezone.now(),
+           period_id=current_period.id,
                     record_type="2",
-         
-            period_id=worktimeperiod.id,
-
-            user_id=request.user,
+            user_id=request.user.id,
           )
-       
+            success = True
+
+        if request_json.get('state') == '3':
+            current_period = WorkTimePeriod.objects.filter(
+            user=self.request.user,
+            date__date=timezone.now()
+        ).first()
+            WorkTimeRecord.objects.create(
+            datetime=timezone.now(),
+           period_id=current_period.id,
+                    record_type="0",
+            user_id=request.user.id,
+          )
+            success = True
 
 
         return JsonResponse({
@@ -372,7 +386,7 @@ def has_active_break(user):
     # Buscar el último registro de pausa
     latest_record = WorkTimeRecord.objects.filter(
         user_id=user,
-        datetime__date=timezone.now().date(),
+        datetime__date=timezone.now(),
         record_type="2"
     ).order_by('-datetime').first()
     

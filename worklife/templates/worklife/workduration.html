@@ -48,7 +48,7 @@
       <div class="col-4 text-center ">
         {% if user_has_login %}
              {% if user_has_pause %}
-             <button type="button"  id="resumeIn" data-state="0" class="btn btn-secondary mx-3">Resume</button>
+             <button type="button"  id="resumeIn" data-state="3" class="btn btn-secondary mx-3">Resume</button>
              {% else %}
              <button type="button"  id="breakIn" data-state="2" class="btn btn-secondary mx-3">Break</button>
              {% endif %}
@@ -135,6 +135,7 @@ function handleCheckInOut(state) {
 document.addEventListener('DOMContentLoaded', () => {
     const checkInBtn = document.querySelector("#checkIn");
     const breakInBtn = document.querySelector("#breakIn");
+    const resumeInBtn = document.querySelector("#resumeIn");
 
     checkInBtn?.addEventListener("click", function(e) {
         e.preventDefault();
@@ -143,6 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     breakInBtn?.addEventListener("click", function(e) {
+        e.preventDefault();
+        const state = this.getAttribute('data-state');
+        handleCheckInOut(state);
+    });
+
+    resumeInBtn?.addEventListener("click", function(e) {
         e.preventDefault();
         const state = this.getAttribute('data-state');
         handleCheckInOut(state);
