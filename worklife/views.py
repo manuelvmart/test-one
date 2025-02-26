@@ -11,7 +11,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from worklife.models import VacationRequest,AbsenceRegistry
 from worklife.models import WorkIncident,WorkTimePeriod,WorkTimeRecord
-
+from django.views.decorators.csrf import csrf_exempt
 
 
 def index(request):
@@ -23,21 +23,31 @@ class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'worklife/workduration.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user=self.request.user,
-        user_has_login = WorkTimePeriod.objects.filter(
-            user=self.request.user,
-            date__date=timezone.now()
-        ).exists()
-
-    
-
-        context.update({
-            "user_has_login": user_has_login,
-            "user_has_pause": has_active_break(self.request.user)
-        })
-
-        return context
+            context = super().get_context_data(**kwargs)
+            
+            # Obtener el usuario correctamente
+            user = self.request.user
+            
+            # Verificar si hay login para hoy
+            user_has_login = WorkTimePeriod.objects.filter(
+                user=user,
+                date__date=timezone.now()
+            ).exists()
+            
+            # Determinar estados basados en el último registro
+            latest_record = WorkTimeRecord.objects.filter(
+                user=user,
+                datetime__date=timezone.now()
+            ).order_by('-datetime').first()
+            
+            context.update({
+                "user_has_login": user_has_login,
+                "user_has_resumed": True if latest_record and latest_record.record_type == "0" else False,
+                "user_has_pause": True if latest_record and latest_record.record_type == "2" else False,
+                "user_has_ended": True if latest_record and latest_record.record_type == "1" else False
+            })
+            
+            return context
     
     def post(self, request):
         success = False
@@ -83,6 +93,35 @@ class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
           )
             success = True
 
+
+        if request_json.get('state') == '1':
+            current_period = WorkTimePeriod.objects.filter(
+            user=self.request.user,
+            date__date=timezone.now()
+        ).first()
+            WorkTimeRecord.objects.create(
+            datetime=timezone.now(),
+           period_id=current_period.id,
+                    record_type="1",
+            user_id=request.user.id,
+          )
+            success = True
+
+
+        if request_json.get('state') == '4':
+            current_period = WorkTimePeriod.objects.filter(
+            user=self.request.user,
+            date__date=timezone.now()
+        ).first()
+            
+            latest_record = WorkTimeRecord.objects.filter(
+                    user=self.request.user,
+                    datetime__date=timezone.now()
+                ).order_by('-datetime').first()
+        
+            if latest_record:
+               latest_record.delete()
+            success = True
 
         return JsonResponse({
             "success": success,
@@ -380,17 +419,52 @@ def set_yes(request, iincident_id, vacationrequest_id):
         return HttpResponseRedirect(reverse("worklife:requestvi"))
 
 
-
-
-def has_active_break(user):
-    # Buscar el último registro de pausa
-    latest_record = WorkTimeRecord.objects.filter(
-        user_id=user,
-        datetime__date=timezone.now(),
-        record_type="2"
-    ).order_by('-datetime').first()
-    
-    if not latest_record:
-        return False  # No hay registros de pausa
-
-    return True
+@csrf_exempt
+def verify_login_today(request):
+    if request.user.is_authenticated:
+        # Obtener el primer registro del día
+        first_login = WorkTimePeriod.objects.filter(
+            user=request.user,
+            date__date=timezone.now().date()
+        ).order_by('date').first()
+        
+        # Determinar estados basados en el último registro
+        latest_record = WorkTimeRecord.objects.filter(
+            user=request.user,
+            datetime__date=timezone.now()
+        ).order_by('-datetime').first()
+        
+        return JsonResponse({
+            'has_login': True,
+            'first_login_time': first_login.date.isoformat() if first_login else None,
+            'user_has_pause': latest_record and latest_record.record_type == "2",
+            'user_has_resumed': latest_record and latest_record.record_type == "0",
+            'user_has_ended': latest_record and latest_record.record_type == "1"
+        })
+    return JsonResponse({
+        'has_login': False,
+        'error': 'No autenticado'
+    })
+            
+ 
+@csrf_exempt
+def get_workday_end(request):
+    if request.user.is_authenticated:
+        # Obtener el registro de fin de jornada
+        end_record = WorkTimeRecord.objects.filter(
+            user=request.user,
+            datetime__date=timezone.now(),
+            record_type="1"  # 1 representa el fin de la jornada
+        ).order_by('-datetime').first()
+        
+        if end_record:
+            return JsonResponse({
+                'end_time': end_record.datetime.isoformat()
+            })
+        else:
+            return JsonResponse({
+                'error': 'No se encontró el registro de fin de jornada'
+            })
+    return JsonResponse({
+        'error': 'No autenticado'
+    })

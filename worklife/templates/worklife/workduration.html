@@ -6,6 +6,7 @@
 {% block body %}
 
     <div class="container-fluid text-center mt-3 ">
+      <h6 class="text-center mt-4">Este es tu checador de jornada laboral</h6>  <p class="text-center mb-2">{{ user.get_username }}</p>
       <div class="row ">
         <div class="col-4">
 
@@ -34,6 +35,7 @@
           <div class="card text-bg-light">
             <div class="card-body">
               <div id="timer">03:58:10</div>
+              <div id="login-status"></div>
             </div>
           </div>
 
@@ -49,10 +51,20 @@
         {% if user_has_login %}
              {% if user_has_pause %}
              <button type="button"  id="resumeIn" data-state="3" class="btn btn-secondary mx-3">Resume</button>
-             {% else %}
+             {% endif %}
+
+             {% if user_has_resumed %}
              <button type="button"  id="breakIn" data-state="2" class="btn btn-secondary mx-3">Break</button>
              {% endif %}
-            <button type="button" data-state="1" class="btn btn-danger">Clock Out</button>
+           
+             {% if user_has_ended %}
+             <button type="button" id="outIn" data-state="4" class="btn btn-warning">Continue working</button>
+             {% else %}
+             <button type="button" id="outIn" data-state="1" class="btn btn-danger">Clock Out</button>
+             {% endif %}
+
+
+            
         {% else %}
             <button type="button" id="checkIn" data-state="0" class="btn btn-success mx-3">Check in</button>
         {% endif %}
@@ -68,23 +80,207 @@
 
 {% block js %}
 <script>
-    function startTime() {
-        const today = new Date();
-        let h = today.getHours();
-        let m = today.getMinutes();
-        let s = today.getSeconds();
-        m = checkTime(m);
-        s = checkTime(s);
-        document.getElementById('timer').innerHTML =  h + ":" + m + ":" + s;
-        setTimeout(startTime, 1000);
+ // Variables para controlar los temporizadores y el inicio de sesión
+let timerInterval;
+let loginTimeout;
+let loginStartTime;
+let isPaused = false;
+let hasEnded = false;
+
+function startTime() {
+    const now = new Date();
+    let totalTime = now - loginStartTime;
+    
+    // Convertir milisegundos a horas, minutos y segundos
+    let h = Math.floor(totalTime / (1000 * 60 * 60));
+    let m = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
+    let s = Math.floor((totalTime % (1000 * 60)) / 1000);
+    
+    // Formateo de números menores a 10
+    m = checkTime(m);
+    s = checkTime(s);
+    
+    // Mostrar tiempo en formato HH:MM:SS
+    document.getElementById('timer').innerHTML = 
+        `${h}:${m}:${s} `;
+}
+
+function checkTime(i) {
+    if (i < 10) {i = "0" + i;}
+    return i;
+}
+
+
+async function checkLoginStatus() {
+    try {
+        const csrftoken = getCookie('csrftoken');
+        const response = await fetch('/verify-login/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data || typeof data.has_login !== 'boolean') {
+            console.error('Respuesta inválida del servidor:', data);
+            return;
+        }
+        
+        // Actualizar el estado según la respuesta
+        if (data.has_login) {
+            if (!loginStartTime) {
+                loginStartTime = new Date(data.first_login_time);
+                if (isNaN(loginStartTime.getTime())) {
+                    console.error('Fecha de inicio inválida:', data.first_login_time);
+                    loginStartTime = null;
+                }
+            }
+            
+            // Manejar estados de trabajo
+            if (data.user_has_ended) {
+                endWorkday();
+                document.getElementById('login-status').textContent = 
+                    '¡Jornada finalizada!';
+            } else if (data.user_has_pause) {
+                pauseTimer();
+                document.getElementById('login-status').textContent = 
+                    '¡En pausa!';
+            } else if (data.user_has_resumed) {
+                resumeTimer();
+                document.getElementById('login-status').textContent = 
+                    '¡Ya iniciaste sesión hoy!';
+            } else {
+                document.getElementById('login-status').textContent = 
+                    '¡Ya iniciaste sesión hoy!';
+            }
+        } else {
+            loginStartTime = null;
+            stopTimers();
+            document.getElementById('login-status').textContent = 
+                'No has iniciado sesión hoy';
+            document.getElementById('timer').textContent = '00:00:00';
+        }
+        
+        console.log('Estado actual:', {
+            hasLogin: data.has_login,
+            loginStartTime: loginStartTime,
+            currentDateTime: new Date().toISOString(),
+            isPaused: isPaused,
+            hasEnded: hasEnded
+        });
+        
+    } catch (error) {
+        console.error('Error al verificar inicio de sesión:', error);
+        document.getElementById('login-status').textContent = 
+            'Error al verificar el estado de sesión';
+        document.getElementById('timer').textContent = '00:00:00';
     }
-  
-    function checkTime(i) {
-        if (i < 10) {i = "0" + i};  
-        return i;
+}
+async function endWorkday() {
+    try {
+        // Detener el temporizador
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        
+        // Obtener el registro de fin de jornada
+        const csrftoken = getCookie('csrftoken');
+        const response = await fetch('/worklife/workduration/end/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data || !data.end_time) {
+            throw new Error('Respuesta inválida del servidor');
+        }
+        
+        // Calcular tiempo total usando los timestamps
+        const totalTime = new Date(data.end_time) - loginStartTime;
+        
+        // Formatear el tiempo
+        const hours = Math.floor(totalTime / (1000 * 60 * 60));
+        const minutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((totalTime % (1000 * 60)) / 1000);
+        
+        // Actualizar la interfaz
+        hasEnded = true;
+        document.getElementById('timer').textContent = 
+            ` ${hours}:${minutes}:${seconds}`;
+        
+        console.log('Jornada finalizada');
+        console.log('Tiempo total trabajado:', {
+            hours: hours,
+            minutes: minutes,
+            seconds: seconds
+        });
+        
+    } catch (error) {
+        console.error('Error al finalizar la jornada:', error);
+        document.getElementById('timer').textContent = 
+            'Error al finalizar la jornada';
     }
-    // startTime();
-// Función para obtener CSRF token
+}
+
+// Función para iniciar ambos temporizadores
+function startTimers() {
+    // Limpiar temporizadores existentes
+    if (timerInterval) clearInterval(timerInterval);
+    if (loginTimeout) clearTimeout(loginTimeout);
+    
+    // Iniciar el reloj
+    startTime();
+    timerInterval = setInterval(startTime, 1000);
+    
+    // Iniciar la verificación de login
+    checkLoginStatus();
+    loginTimeout = setTimeout(checkLoginStatus, 60000);
+}
+function pauseTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        isPaused = true;
+        document.getElementById('timer').textContent = '00:00:00';
+        console.log('Temporizador pausado');
+    }
+}
+
+function resumeTimer() {
+    if (!timerInterval && loginStartTime) {
+        timerInterval = setInterval(startTime, 1000);
+        isPaused = false;
+        console.log('Temporizador reanudado');
+    }}
+
+function stopTimers() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    if (loginTimeout) {
+        clearTimeout(loginTimeout);
+        loginTimeout = null;
+    }
+    isPaused = false;
+}
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -99,6 +295,10 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+// Iniciar cuando se cargue la página
+window.onload = startTimers;
+
 
 // Manejador común para ambos botones
 function handleCheckInOut(state) {
@@ -136,6 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkInBtn = document.querySelector("#checkIn");
     const breakInBtn = document.querySelector("#breakIn");
     const resumeInBtn = document.querySelector("#resumeIn");
+    const outInBtn = document.querySelector("#outIn");
 
     checkInBtn?.addEventListener("click", function(e) {
         e.preventDefault();
@@ -150,6 +351,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     resumeInBtn?.addEventListener("click", function(e) {
+        e.preventDefault();
+        const state = this.getAttribute('data-state');
+        handleCheckInOut(state);
+    });
+
+
+    outInBtn?.addEventListener("click", function(e) {
         e.preventDefault();
         const state = this.getAttribute('data-state');
         handleCheckInOut(state);
