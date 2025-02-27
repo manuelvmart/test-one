@@ -468,3 +468,47 @@ def get_workday_end(request):
     return JsonResponse({
         'error': 'No autenticado'
     })
+
+
+
+class CollaboratorView(LoginRequiredMixin, generic.ListView):
+            template_name = "worklife/collaborator.html"
+            
+            def get_queryset(self):
+                return WorkTimeRecord.objects.select_related('period').all()
+            
+            def get_context_data(self, **kwargs):
+                context = super().get_context_data(**kwargs)
+                context['calendar_events'] = self.get_calendar_events()
+                return context
+            
+            def get_calendar_events(self):
+                events = []
+                for worktimerecord in self.get_queryset():
+                    # Filtrar solo registros con record_type=0
+                    if worktimerecord.record_type != "0":
+                        continue
+                        
+                    # Determinar estados basados en el último registro
+                    latest_record = WorkTimeRecord.objects.filter(
+                        user=worktimerecord.user,
+                        record_type="1",
+                        datetime__date=worktimerecord.period.date
+                    ).order_by('-datetime').first()
+                    
+                    event = {
+                        'className': 'pending-event',
+                        'id': worktimerecord.id,
+                        'user': worktimerecord.user.get_full_name(),
+                        'title': worktimerecord.user.username,
+                        'start': worktimerecord.period.date.isoformat()
+                    }
+                    
+                    # Solo agregar el campo 'end' si existe un registro válido
+                    if latest_record is not None:
+                        event['end'] = latest_record.datetime.isoformat()
+                        event['description'] = "Jornada finalizada"
+                        
+                    events.append(event)
+                
+                return json.dumps(events)

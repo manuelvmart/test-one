@@ -136,7 +136,7 @@ async function checkLoginStatus() {
         // Actualizar el estado según la respuesta
         if (data.has_login) {
             if (!loginStartTime) {
-                loginStartTime = new Date(data.first_login_time);
+                loginStartTime = new Date(Date.parse(data.first_login_time));
                 if (isNaN(loginStartTime.getTime())) {
                     console.error('Fecha de inicio inválida:', data.first_login_time);
                     loginStartTime = null;
@@ -156,22 +156,32 @@ async function checkLoginStatus() {
                 resumeTimer();
                 document.getElementById('login-status').textContent = 
                     '¡Ya iniciaste sesión hoy!';
-            } else {
+            } else if (data.first_login_time){
                 document.getElementById('login-status').textContent = 
                     '¡Ya iniciaste sesión hoy!';
             }
+            else {
+                document.getElementById('login-status').textContent = 
+                    'No has iniciado sesión hoy';
+                document.getElementById('timer').textContent = '00:00:00';
+                stopTimers();
+            }
         } else {
             loginStartTime = null;
-            stopTimers();
+          
             document.getElementById('login-status').textContent = 
                 'No has iniciado sesión hoy';
             document.getElementById('timer').textContent = '00:00:00';
         }
-        
+        // Convertir a zona horaria de México
+        const mexicoOffset = -6 * 60; // Zona horaria de Ciudad de México (-06:00)
+        const currentDateTime = new Date();
+        currentDateTime.setMinutes(currentDateTime.getMinutes() + mexicoOffset);
+
         console.log('Estado actual:', {
             hasLogin: data.has_login,
             loginStartTime: loginStartTime,
-            currentDateTime: new Date().toISOString(),
+            currentDateTime:currentDateTime.toISOString(),
             isPaused: isPaused,
             hasEnded: hasEnded
         });
