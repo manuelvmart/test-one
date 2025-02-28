@@ -115,27 +115,30 @@ color:rgb(0, 0, 0) !important;
   },
         events:{{calendar_events| safe }},
         eventClick: function(info) {
-            let content = `
-              <strong>Title:</strong> ${info.event.extendedProps.user}<br>
-                <strong>Title:</strong> ${info.event.title}<br>
-                 <strong>Status:</strong> ${info.event.extendedProps.status}<br>
-                <strong>Comenzo:</strong> ${info.event.start.toLocaleDateString()}  ${info.event.start.toLocaleTimeString([], {
+    let content = `
+        <strong>Title:</strong> ${info.event.title}<br>
+        <strong>usuario:</strong> ${info.event.extendedProps.user}<br>
+        <strong>Comenzo:</strong> ${info.event.start.toLocaleDateString()} ${info.event.start.toLocaleTimeString([], {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit',
             hour12: false
         })}<br>
-                
-                <strong>Finalizo:</strong>  ${info.event.end.toLocaleDateString()}  ${info.event.end.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        })}<br>
-                <strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
-            `;
-            showModal(info.event.title, content);
-        },
+        <strong>Finalizo:</strong> ${
+            info.event.end ? 
+                `${info.event.end.toLocaleDateString()} ${info.event.end.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                })}` : 
+                'Sin fecha de finalización<br>'
+        }<br>
+        <strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
+    `;
+    
+    showModal(info.event.title, content);
+},
         eventContent: function(info) {
         return {
             html: `<strong class="text-dark" style="text-overflow: ellipsis;">${info.timeText} ${info.event.title}</strong>`

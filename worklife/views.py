@@ -498,9 +498,8 @@ class CollaboratorView(LoginRequiredMixin, generic.ListView):
                     
                     event = {
                         'className': 'pending-event',
-                        'id': worktimerecord.id,
                         'user': worktimerecord.user.get_full_name(),
-                        'title': worktimerecord.user.username,
+                        'title': f"#{worktimerecord.id} {worktimerecord.user.username}",
                         'start': worktimerecord.period.date.isoformat()
                     }
                     
@@ -508,7 +507,11 @@ class CollaboratorView(LoginRequiredMixin, generic.ListView):
                     if latest_record is not None:
                         event['end'] = latest_record.datetime.isoformat()
                         event['description'] = "Jornada finalizada"
-                        
+
+                    if latest_record is  None:
+                        event['description'] = "Jornada en Proceso"
+
+
                     events.append(event)
                 
                 return json.dumps(events)

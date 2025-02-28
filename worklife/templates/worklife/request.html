@@ -355,7 +355,7 @@
     {% if vacationrequest.approved == False %}
     <td><span class="status text-danger">&bull;</span>Denegada</td>
     <td>{{ vacationrequest.incident.formatted_incident_type }}</td>
-    <td><a href="#" class="view3" title="View Details" data-toggle="tooltip"><i class="bi bi-backpack"></i></a>
+    <td><a href="#" class="view3" title="Edit" data-toggle="tooltip" id="mostrarmodal"><i class="bi bi-backpack"></i></a>
     </td>
 
 {% endif %}         
@@ -363,7 +363,7 @@
 {% if vacationrequest.approved == True %}
 <td><span class="status text-success">&bull;</span>Aprobada</td>
 <td>{{ vacationrequest.incident.formatted_incident_type }} </td>
-<td><a href="#" class="view3" title="View Details" data-toggle="tooltip"><i class="bi bi-backpack"></i></a>
+<td><a href="#" class="view3" title="Edit" data-toggle="tooltip" id="mostrarmodal"><i class="bi bi-backpack"></i></a>
 </td>
 
 {% endif %}                 
@@ -395,7 +395,69 @@
 </div>    
 
 
+  <!-- Modal con formulario -->
+  <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      
+        <div class="modal-content">
+          
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">Editar Vacaciones o Descanso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  
+                </button>
+            </div>
+            <div class="modal-body" class="py-3">
+              <div class="contact-image">
+                <img src="{% static 'worklife/images/empleador.png' %}" alt="rocket_contact"/>
+            </div>
+                <form id="eventForm" >
+                  <div class="form-group">
+                    <label for="start">Fecha de inicio</label>
+                    <input type="datetime-local" class="form-control" id="start" name="start" required>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="end">Fecha de fin</label>
+                    <input type="datetime-local" class="form-control" id="end" name="end" required>
+                </div>
+                    <div class="form-group mt-3">
+                      <label for="description">Tipo de Incidencia</label>
+                      <select class="form-select" aria-label="Default select example">
+                      <option selected>Incident Type </option>
+                      <option value="0">Vacations</option>
+                      <option value="2">Delay</option>
+                      <option value="3">Unjustified absences</option>
+                      <option value="4">Justified absences</option>
+                      <option value="5">Maternity leave</option>
+                      <option value="6">Work Incapacity</option>
+                    </select>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="description">Descripción</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                   
+                    
+                </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveEvent">Guardar</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
     {% endblock %}
 
 {% block js %}
+<script>
+
+const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+document.getElementById("mostrarmodal").addEventListener("click", Show); 
+function Show(){
+    modal.show();
+}
+
+</script>
 {% endblock %}
