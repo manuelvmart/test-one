@@ -355,7 +355,16 @@
     {% if vacationrequest.approved == False %}
     <td><span class="status text-danger">&bull;</span>Denegada</td>
     <td>{{ vacationrequest.incident.formatted_incident_type }}</td>
-    <td><a href="#" class="view3" title="Edit" data-toggle="tooltip" id="mostrarmodal"><i class="bi bi-backpack"></i></a>
+    <td><a href="#"  class="view3" title="Edit" data-toggle="tooltip" 
+        data-request-id="{{ vacationrequest.id }}"
+        data-start-date="{{ vacationrequest.vacation_start|date:'Y-m-d H:i:s' }}"
+        data-end-date="{{ vacationrequest.vacation_end|date:'Y-m-d H:i:s' }}"
+        data-description="{{ vacationrequest.detail }}"
+        data-incident-type="{{ vacationrequest.incident.incident_type }}"
+        data-approved="{{ vacationrequest.approved }}"
+        >
+        <i class="bi bi-pencil"></i>
+     </a>
     </td>
 
 {% endif %}         
@@ -363,7 +372,18 @@
 {% if vacationrequest.approved == True %}
 <td><span class="status text-success">&bull;</span>Aprobada</td>
 <td>{{ vacationrequest.incident.formatted_incident_type }} </td>
-<td><a href="#" class="view3" title="Edit" data-toggle="tooltip" id="mostrarmodal"><i class="bi bi-backpack"></i></a>
+<td>
+    <a href="#"  class="view3" title="Edit" data-toggle="tooltip" 
+    data-request-id="{{ vacationrequest.id }}"
+    data-start-date="{{ vacationrequest.vacation_start|date:'Y-m-d H:i:s' }}"
+    data-end-date="{{ vacationrequest.vacation_end|date:'Y-m-d H:i:s' }}"
+    data-description="{{ vacationrequest.detail }}"
+    data-incident-type="{{ vacationrequest.incident.incident_type }}"
+    data-approved="{{ vacationrequest.approved }}">
+    
+    
+    <i class="bi bi-pencil"></i>
+ </a>
 </td>
 
 {% endif %}                 
@@ -394,70 +414,92 @@
     </div>        
 </div>    
 
-
-  <!-- Modal con formulario -->
-  <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+<div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-      
         <div class="modal-content">
-          
             <div class="modal-header">
                 <h5 class="modal-title" id="eventModalLabel">Editar Vacaciones o Descanso</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                  
-                </button>
             </div>
-            <div class="modal-body" class="py-3">
-              <div class="contact-image">
-                <img src="{% static 'worklife/images/empleador.png' %}" alt="rocket_contact"/>
-            </div>
-                <form id="eventForm" >
-                  <div class="form-group">
-                    <label for="start">Fecha de inicio</label>
-                    <input type="datetime-local" class="form-control" id="start" name="start" required>
+            <div class="modal-body py-3">
+                <div class="contact-image">
+                    <img src="{% static 'worklife/images/editar-informacion.png' %}" alt="rocket_contact"/>
                 </div>
-                <div class="form-group mt-3">
-                    <label for="end">Fecha de fin</label>
-                    <input type="datetime-local" class="form-control" id="end" name="end" required>
-                </div>
-                    <div class="form-group mt-3">
-                      <label for="description">Tipo de Incidencia</label>
-                      <select class="form-select" aria-label="Default select example">
-                      <option selected>Incident Type </option>
-                      <option value="0">Vacations</option>
-                      <option value="2">Delay</option>
-                      <option value="3">Unjustified absences</option>
-                      <option value="4">Justified absences</option>
-                      <option value="5">Maternity leave</option>
-                      <option value="6">Work Incapacity</option>
-                    </select>
+                <form id="eventForm">
+                    <div class="form-group">
+                        <div class="form-group mt-3  mb-3 text-center">
+                            <label class="form-check-label " for="approved">
+                                Estado :Aprobada/ No aprobada
+                              </label>
+                            <input class="form-check-input" type="checkbox" value="" id="approved">
+                            
+                          </div>
+                        <label for="start">Fecha de inicio</label>
+                        <input type="datetime-local" class="form-control" id="start" name="start" required>
                     </div>
+                    <div class="form-group mt-3">
+                        <label for="end">Fecha de fin</label>
+                        <input type="datetime-local" class="form-control" id="end" name="end" required>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="description">Tipo de Incidencia</label>
+                        <select class="form-select" aria-label="Default select example" id="incidentType">
+                            <option value="">Seleccionar tipo de incidencia</option>
+                            <option value="0">Vacaciones</option>
+                            <option value="2">Retraso</option>
+                            <option value="3">Ausencias injustificadas</option>
+                            <option value="4">Ausencias justificadas</option>
+                            <option value="5">Licencia de maternidad</option>
+                            <option value="6">Incapacidad laboral</option>
+                        </select>
+                    </div>
+                    
                     <div class="form-group mt-3">
                         <label for="description">Descripción</label>
                         <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                     </div>
-                   
-                    
                 </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="saveEvent">Guardar</button>
             </div>
         </div>
     </div>
-  </div>
-
+</div>
     {% endblock %}
 
 {% block js %}
-<script>
+<!--  jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-const modal = new bootstrap.Modal(document.getElementById('eventModal'));
-document.getElementById("mostrarmodal").addEventListener("click", Show); 
-function Show(){
-    modal.show();
-}
-
+<script>document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el modal
+    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    
+    // Agregar el manejador de clic a todos los elementos con clase view3
+    document.querySelectorAll('.view3').forEach(boton => {
+        boton.addEventListener("click", function() {
+            // Obtener los datos usando jQuery
+            const requestId = $(this).data('request-id');
+            const startDate = $(this).data('start-date');
+            const endDate = $(this).data('end-date');
+            const description = $(this).data('description');
+            const incidentType = $(this).data('incident-type');
+            const approved = $(this).data('approved').toLowerCase() === 'true';
+            // Actualizar campos del formulario
+            $('#start').val(startDate);
+            $('#end').val(endDate);
+            $('#description').val(description);
+            $('#incidentType').val(incidentType);
+            $('#approved').prop('checked', approved);
+            
+            console.log('Valor de data-approved:', approved);
+console.log('Estado del checkbox:', $('#approved').prop('checked'));
+            // Mostrar el modal
+            modal.show();
+        });
+    });
+});
 </script>
 {% endblock %}

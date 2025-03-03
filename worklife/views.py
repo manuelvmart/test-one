@@ -497,7 +497,7 @@ class CollaboratorView(LoginRequiredMixin, generic.ListView):
                     ).order_by('-datetime').first()
                     
                     event = {
-                        'className': 'pending-event',
+                        'className': 'collaborator',
                         'user': worktimerecord.user.get_full_name(),
                         'title': f"#{worktimerecord.id} {worktimerecord.user.username}",
                         'start': worktimerecord.period.date.isoformat()
