@@ -1,6 +1,7 @@
 """Vista para manejo de acciones de inciencias de nomina"""
 from datetime import timedelta
 import json
+from urllib import response
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
@@ -361,17 +362,14 @@ class CincidentsView(LoginRequiredMixin, generic.ListView):
 
 
 
-class RequestView(LoginRequiredMixin, generic.ListView):
+class RequestView(LoginRequiredMixin, generic.TemplateView):
      template_name = "worklife/request.html"
    
-     def get_queryset(self):
-        return VacationRequest.objects.select_related('incident').all()
-        
      def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['incidents'] = WorkIncident.objects.all()
-
-        return context
+                context = super().get_context_data(**kwargs)
+                context['vacation_requests'] = VacationRequest.objects.select_related('incident').all()
+                context['incidents'] = WorkIncident.objects.all()
+                return context
      
 def set_not(request, incident_id, vacationrequest_id):
         vacationrequest = get_object_or_404(VacationRequest, pk=vacationrequest_id)
@@ -418,6 +416,66 @@ def set_yes(request, iincident_id, vacationrequest_id):
         
         return HttpResponseRedirect(reverse("worklife:requestvi"))
 
+def set_update(request):
+    try:
+        # Asegurarnos de que el contenido es JSON
+        if not request.content_type.startswith('application/json'):
+            return JsonResponse({
+                'success': False,
+                'message': 'El contenido debe ser JSON'
+            }, status=400)
+        
+        data = json.loads(request.body)
+        
+        # Validación completa
+        required_fields = ['id_v', 'description', 'start', 'end', 'approved']
+        if not all(field in data for field in required_fields):
+            return JsonResponse({
+                'success': False,
+                'message': 'Faltan campos requeridos en la solicitud'
+            }, status=400)
+        
+        # Validación de tipos
+        if not isinstance(data.get('approved'), bool):
+            return JsonResponse({
+                'success': False,
+                'message': 'El campo "approved" debe ser booleano'
+            }, status=400)
+        
+        vacation_request = get_object_or_404(VacationRequest, pk=data['id_v'])
+        incident = get_object_or_404(WorkIncident, pk=vacation_request.incident_id)
+        vacation_request.detail = data['description']
+        vacation_request.vacation_start = data['start']
+        vacation_request.vacation_end = data['end']
+        vacation_request.approved = data['approved']
+
+
+        incident.incident_type = data['type']
+        try:
+            vacation_request.save()
+            incident.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Vacación actualizada exitosamente'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': 'Error al guardar la solicitud',
+                'error': str(e)
+            }, status=500)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'El formato JSON es inválido'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'Error interno del servidor',
+            'error': str(e)
+        }, status=500)
 
 @csrf_exempt
 def verify_login_today(request):

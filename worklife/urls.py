@@ -14,6 +14,7 @@ urlpatterns = [
     path('requestvi/', views.RequestView.as_view(), name='requestvi'),
         path('<int:incident_id>/<int:vacationrequest_id>/set_not/', views.set_not, name='set_not'),
             path('<int:iincident_id>/<int:vacationrequest_id>/set_yes/', views.set_yes, name='set_yes'),
+            path('set_update/', views.set_update, name='set_update'),
             path('verify-login/', views.verify_login_today, name='verify-login'),
-             path('worklife/workduration/end/', views.get_workday_end, name='end-workday'),
+             path('worklife/workduration/end/', views.get_workday_end, name='end-workday')
 ]
