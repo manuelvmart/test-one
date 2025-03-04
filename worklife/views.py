@@ -9,11 +9,11 @@ from django.shortcuts import  get_object_or_404, render
 from django.views import generic
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from django.db.models.signals import post_save,pre_save
 from worklife.models import VacationRequest,AbsenceRegistry
 from worklife.models import WorkIncident,WorkTimePeriod,WorkTimeRecord
 from django.views.decorators.csrf import csrf_exempt
-
+from .models import save_post
 
 def index(request):
   return render(request, "worklife/index.html")
@@ -133,14 +133,21 @@ class WorkDurationView(LoginRequiredMixin, generic.TemplateView):
 
 
 class CalendarView(LoginRequiredMixin, generic.TemplateView):
-     """Vista para manejar el inicio de labores del trabajador"""
-     template_name = 'worklife/calendar.html'
+    """Vista para manejar el inicio de labores del trabajador"""
+    template_name = 'worklife/calendar.html'
 
-     def post(self, request):
+    def post(self, request):
         try:
             data = json.loads(request.body)
             
-          
+            # Validar datos requeridos
+            required_fields = ['type', 'description', 'start', 'end']
+            if not all(field in data for field in required_fields):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Faltan campos requeridos en la solicitud'
+                }, status=400)
+
             # Crear incidente
             incident = WorkIncident.objects.create(
                 user=request.user,
@@ -149,21 +156,33 @@ class CalendarView(LoginRequiredMixin, generic.TemplateView):
                 incident_start=data['start'],
                 incident_end=data['end']
             )
-            # Crear vacation request
+
+            # Crear solicitud de vacaciones
             vacation = VacationRequest.objects.create(
-                incident = incident,
-                user = request.user,
-                vacation_start = data['start'],
-                vacation_end = data['end'],
-                
-                detail = data['description'],
+                incident=incident,
+                user=request.user,
+                vacation_start=data['start'],
+                vacation_end=data['end'],
+                detail=data['description']
             )
 
             return JsonResponse({
                 'success': True,
                 'message': 'Incidente guardado exitosamente'
             })
-            
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Formato JSON inválido'
+            }, status=400)
+
+        except KeyError as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Campo requerido faltante: {str(e)}'
+            }, status=400)
+
         except Exception as e:
             return JsonResponse({
                 'success': False,
@@ -265,7 +284,7 @@ class VacationsView(LoginRequiredMixin, generic.ListView):
             template_name = "worklife/vacations.html"
             
             def get_queryset(self):
-                return WorkIncident.objects.select_related('user').all()
+                return WorkIncident.objects.all()
             
             def get_context_data(self, **kwargs):
                 context = super().get_context_data(**kwargs)
@@ -289,6 +308,7 @@ class VacationsView(LoginRequiredMixin, generic.ListView):
                             'className': class_name,
                             'id': incident.id,
                             'user': incident.user.get_full_name(),
+                            'username': incident.user.username,
                             'title': incident.formatted_incident_type,
                             'start': incident.incident_start.isoformat(),
                             'end': incident.incident_end.isoformat(),
@@ -366,11 +386,11 @@ class RequestView(LoginRequiredMixin, generic.TemplateView):
      template_name = "worklife/request.html"
    
      def get_context_data(self, **kwargs):
-                context = super().get_context_data(**kwargs)
-                context['vacation_requests'] = VacationRequest.objects.select_related('incident').all()
-                context['incidents'] = WorkIncident.objects.all()
-                return context
-     
+            context = super().get_context_data(**kwargs)
+            context['vacation_requests'] = VacationRequest.objects.select_related('incident').order_by('-incident__incident_start').all()
+            context['incidents'] = WorkIncident.objects.order_by('-incident_start').all()
+            return context
+            
 def set_not(request, incident_id, vacationrequest_id):
         vacationrequest = get_object_or_404(VacationRequest, pk=vacationrequest_id)
         incident = get_object_or_404(WorkIncident, pk=incident_id)
@@ -391,25 +411,7 @@ def set_yes(request, iincident_id, vacationrequest_id):
         if request.method == 'POST':  
             vacationrequest .approved = True
             vacationrequest.save()
-            if incident.incident_type=="3":
-                 AbsenceRegistry.objects.create(
-                        absence_start=vacationrequest.vacation_start,
-                        absence_end=vacationrequest.vacation_end,
-                        detail=vacationrequest.detail,
-                        incident_id=iincident_id,
-                        user_id=vacationrequest.user_id,
-                        absence_type=vacationrequest. incident.incident_type,
-                    )
-            if incident.incident_type=="4":
-                 AbsenceRegistry.objects.create(
-                        absence_start=vacationrequest.vacation_start,
-                        absence_end=vacationrequest.vacation_end,
-                        detail=vacationrequest.detail,
-                        incident_id=iincident_id,
-                        user_id=vacationrequest.user_id,
-                        absence_type=vacationrequest. incident.incident_type,
-                    )
-
+       
             incident .applied = True
             incident.save()
             return HttpResponseRedirect(reverse("worklife:requestvi"))
@@ -451,6 +453,11 @@ def set_update(request):
 
 
         incident.incident_type = data['type']
+        incident.comments = data['description']
+        incident.incident_start = data['start']
+        incident.incident_end = data['end']
+        incident.applied = data['approved']
+
         try:
             vacation_request.save()
             incident.save()

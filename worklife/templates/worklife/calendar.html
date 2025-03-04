@@ -65,8 +65,8 @@
                   <div class="form-group mt-3">
                     <label for="description">Tipo de Incidencia</label>
                     <select class="form-select" aria-label="Default select example">
-                    <option selected>Incident Type </option>
-                    <option value="0">Vacations</option>
+                   
+                    <option value="0" selected>Vacations</option>
                     <option value="2">Delay</option>
                     <option value="3">Unjustified absences</option>
                     <option value="4">Justified absences</option>
@@ -162,6 +162,7 @@
                 info.end.getSeconds()
             )
         );
+      
     } else {
         // Es un rango de días - mantenemos la fecha final como está
         endDate = new Date(
@@ -174,6 +175,8 @@
                 info.end.getSeconds()
             )
         );
+        endDate.setUTCHours(23);
+        endDate.setUTCMinutes(59);
     }
     
     // Formatear las fechas al formato ISO requerido por datetime-local
@@ -248,7 +251,7 @@ document.getElementById('saveEvent').addEventListener('click', function() {
             throw new Error('Formato de fecha inválido');
         }
         
-        if (startDate >= endDate) {
+        if (startDate > endDate) {
             throw new Error('La fecha de fin debe ser posterior a la fecha de inicio');
         }
     } catch (error) {

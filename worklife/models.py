@@ -1,6 +1,15 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save,pre_save
 # Create your models here.
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+from django.dispatch import receiver
 
 class WorkTimePeriod(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
@@ -20,6 +29,8 @@ class WorkTimePeriod(models.Model):
             record_type="0"
         )
         return worktimeperiod
+     
+
 
 class WorkTimeRecord(models.Model):
     user = user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
@@ -64,6 +75,31 @@ class VacationRequest(models.Model):
                 vacation_end = models.DateTimeField("VacationEndTime")
                 approved = models.BooleanField(null=True)
                 detail = models.CharField(max_length=200)
+
+@receiver(post_save, sender=VacationRequest)
+def save_post(sender, instance, **kwargs):
+    if hasattr(instance, 'incident') and instance.incident.incident_type == "3"  and instance.approved==True:
+        logger.info("Tipo NO Justificado")
+        AbsenceRegistry.objects.create(
+                absence_start=instance.vacation_start,
+                absence_end=instance.vacation_end,
+                detail=instance.detail,
+                incident_id=instance.incident.id,
+                user_id=instance.user_id,
+                absence_type=instance.incident.incident_type,
+            )
+    if hasattr(instance, 'incident') and instance.incident.incident_type == "4" and instance.approved==True:
+        logger.info("Tipo Justificado")
+        AbsenceRegistry.objects.create(
+                absence_start=instance.vacation_start,
+                absence_end=instance.vacation_end,
+                detail=instance.detail,
+                incident_id=instance.incident.id,
+                user_id=instance.user_id,
+                absence_type=instance.incident.incident_type,
+            )
+
+
 
 
 class AbsenceRegistry(models.Model):
