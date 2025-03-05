@@ -231,7 +231,7 @@
     .pagination li.active a:hover {        
         background: #0397d6;
     }
-    .pagination li.disabled i {
+    .pagination li.page-item-disabled {
         color: #ccc;
     }
     .pagination li i {
@@ -262,16 +262,16 @@
                     </div>
                 </div>
             </div>
-            <!--div class="table-filter">
+            <div class="table-filter">
                 <div class="row">
                     <div class="col-sm-3">
                         <div class="show-entries">
                             <span>Show</span>
-                            <select class="form-control">
-                                <option>5</option>
-                                <option>10</option>
-                                <option>15</option>
-                                <option>20</option>
+                            <select class="form-control entries-select" onchange="updateEntries(this.value)" id="selecta">
+                                <option value="3">3</option>
+                                <option value="6">6</option>
+                                <option value="9">9</option>
+                                <option value="12">12</option>
                             </select>
                             <span>entries</span>
                         </div>
@@ -282,31 +282,20 @@
                             <label>Name</label>
                             <input type="text" class="form-control">
                         </div>
-                        <div class="filter-group">
-                            <label>Location</label>
-                            <select class="form-control">
-                                <option>All</option>
-                                <option>Berlin</option>
-                                <option>London</option>
-                                <option>Madrid</option>
-                                <option>New York</option>
-                                <option>Paris</option>								
-                            </select>
-                        </div>
+                       
                         <div class="filter-group">
                             <label>Status</label>
                             <select class="form-control">
                                 <option>Any</option>
-                                <option>Delivered</option>
-                                <option>Shipped</option>
                                 <option>Pending</option>
-                                <option>Cancelled</option>
+                                <option>Approved</option>
+                                <option>Rejected</option>
                             </select>
                         </div>
                         <span class="filter-icon"><i class="fa fa-filter"></i></span>
                     </div>
                 </div>
-            </div----->
+            </div>
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
@@ -396,21 +385,37 @@
                    
                 </tbody>
             </table>
-            <!---div class="clearfix">
-                <div class="hint-text">Showing <b>5</b> out of <b>25</b> entries</div>
+            <div class="clearfix">
+                <div class="hint-text">Showing <b>{{ vacation_requests.object_list|length }}</b> out of <b>{{ vacation_requests.paginator.count }}</b> entries
+                 <br>Page <b>{{ vacation_requests.number }}</b> out of <b>{{ vacation_requests.paginator.num_pages }}</b> Pages
+                </div>
                 <ul class="pagination">
-                    <li class="page-item disabled"><a href="#">Previous</a></li>
-                    <li class="page-item"><a href="#" class="page-link">1</a></li>
-                    <li class="page-item"><a href="#" class="page-link">2</a></li>
-                    <li class="page-item"><a href="#" class="page-link">3</a></li>
-                    <li class="page-item active"><a href="#" class="page-link">4</a></li>
-                    <li class="page-item"><a href="#" class="page-link">5</a></li>
-                    <li class="page-item"><a href="#" class="page-link">6</a></li>
-                    <li class="page-item"><a href="#" class="page-link">7</a></li>
-                    <li class="page-item"><a href="#" class="page-link">Next</a></li>
+                    <li class="page-item {% if not vacation_requests.has_previous %}disabled{% endif %}">
+                        <a href="?page=1" class="page-link">First</a>
+                    </li>
+                    
+                    <li class="page-item {% if not vacation_requests.has_previous %}disabled{% endif %}">
+                        {% if vacation_requests.has_previous %}
+                            <a href="?page={{ vacation_requests.previous_page_number }}" class="page-link">Previous</a>
+                        {% else %}
+                            <a class="page-link">Previous</a>
+                        {% endif %}
+                    </li>
+                    
+                    <li class="page-item {% if not vacation_requests.has_next %}disabled{% endif %}">
+                        {% if vacation_requests.has_next %}
+                            <a href="?page={{ vacation_requests.next_page_number }}" class="page-link">Next</a>
+                        {% else %}
+                            <a class="page-link">Next</a>
+                        {% endif %}
+                    </li>
+                    
+                    <li class="page-item {% if not vacation_requests.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ vacation_requests.paginator.num_pages }}" class="page-link">Last</a>
+                    </li>
                 </ul>
             </div>
-        </div--->
+            
     </div>        
 </div>    </div>    
 
@@ -657,6 +662,34 @@ function getCookie(name) {
 }
 });
 
+function updateEntries(value) {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('page_size', value);
+    window.location.search = urlParams.toString();
+    
+    // Add this line to preserve the current page number
+    const currentPage = urlParams.get('page') || '1';
+    window.location.href = `${window.location.pathname}?page=${currentPage}&page_size=${value}`;
+}
 
+
+function updateEntrySelection() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageSize = urlParams.get('page_size');
+    
+    // Get select element
+    const selectElement = document.getElementById('selecta');
+    
+    // Update selected option
+    if (pageSize && selectElement) {
+        selectElement.value = pageSize;
+    } else {
+        // Default to first option if no page_size parameter
+        selectElement.selectedIndex = 0;
+    }
+}
+
+// Call updateEntrySelection when page loads
+document.addEventListener('DOMContentLoaded', updateEntrySelection);
 </script>
 {% endblock %}

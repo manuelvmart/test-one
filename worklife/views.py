@@ -14,6 +14,8 @@ from worklife.models import VacationRequest,AbsenceRegistry
 from worklife.models import WorkIncident,WorkTimePeriod,WorkTimeRecord
 from django.views.decorators.csrf import csrf_exempt
 from .models import save_post
+from django.db.models import F
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def index(request):
   return render(request, "worklife/index.html")
@@ -386,10 +388,35 @@ class RequestView(LoginRequiredMixin, generic.TemplateView):
      template_name = "worklife/request.html"
    
      def get_context_data(self, **kwargs):
-            context = super().get_context_data(**kwargs)
-            context['vacation_requests'] = VacationRequest.objects.select_related('incident').order_by('-incident__incident_start').all()
-            context['incidents'] = WorkIncident.objects.order_by('-incident_start').all()
-            return context
+        context = super().get_context_data(**kwargs)
+        
+        # Get page size from URL parameter, default to 6
+        page_size = int(self.request.GET.get('page_size', 6))
+        
+        # Fetch vacation requests
+        vacation_requests = VacationRequest.objects.select_related('incident').order_by(
+            F('approved').asc(nulls_first=True), '-incident__incident_start')
+        
+        # Create paginator with dynamic page size
+        paginator = Paginator(vacation_requests, page_size)
+        
+        # Get current page
+        page_number = self.request.GET.get('page', 1)
+        
+        try:
+            page_obj = paginator.get_page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.get_page(1)
+        except EmptyPage:
+            page_obj = paginator.get_page(paginator.num_pages)
+        
+        # Add current page size to context for template
+        context['page_size'] = page_size
+        context['vacation_requests'] = page_obj
+        context['incidents'] = WorkIncident.objects.order_by('-incident_start').all()
+        
+        return context
+
             
 def set_not(request, incident_id, vacationrequest_id):
         vacationrequest = get_object_or_404(VacationRequest, pk=vacationrequest_id)
