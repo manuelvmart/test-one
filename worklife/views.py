@@ -393,13 +393,13 @@ class RequestView(LoginRequiredMixin, generic.ListView):
     """Vista para  Manejar las Solicitudes de Incidencias de los colaboradores"""
     template_name = "worklife/request.html"
     model = VacationRequest
-    paginate_by = 6
+    paginate_by = 3
     context_object_name = 'vacation_requests'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        page_size = int(self.request.GET.get('page_size', 6))
+        page_size = int(self.request.GET.get('page_size', 3))
         vacation_requests = self.get_filtered_vacation_requests()
         
         paginator = Paginator(vacation_requests, page_size)
