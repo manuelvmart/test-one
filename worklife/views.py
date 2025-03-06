@@ -365,6 +365,7 @@ class CincidentsView(LoginRequiredMixin, generic.ListView):
                             'className': class_name,
                             'id': incident.id,
                             'user': incident.user.get_full_name(),
+                            'username': incident.user.username,
                             'title': incident.formatted_incident_type,
                             'start': incident.incident_start.isoformat(),
                             'end': incident.incident_end.isoformat(),

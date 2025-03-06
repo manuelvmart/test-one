@@ -104,7 +104,7 @@ color:rgb(0, 0, 0) !important;
         events:{{calendar_events| safe }},
         eventClick: function(info) {
             let content = `
-              <strong>Title:</strong> ${info.event.extendedProps.user}<br>
+              <strong>Colaborador:</strong> ${info.event.extendedProps.user}<br>
                 <strong>Title:</strong> ${info.event.title}<br>
                  <strong>Status:</strong> ${info.event.extendedProps.status}<br>
                 <strong>Comenzo:</strong> ${info.event.start.toLocaleDateString()}  ${info.event.start.toLocaleTimeString([], {
@@ -126,7 +126,7 @@ color:rgb(0, 0, 0) !important;
         },
         eventContent: function(info) {
         return {
-            html: `<strong class="text-dark" style="text-overflow: ellipsis;">${info.timeText} ${info.event.title}</strong>`
+            html: `<strong class="text-dark" style="text-overflow: ellipsis;">${info.timeText} (${info.event.id}) ${info.event.extendedProps.username}</strong>`
         }}
     });
     
