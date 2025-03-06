@@ -129,9 +129,9 @@ color:rgb(0, 0, 0) !important;
                     second: '2-digit',
                     hour12: false
                 })}` : 
-                'Sin fecha de finalización<br>'
-        }<br>
-        <strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
+                'Sin fecha de finalización '
+        }
+        <br><strong>Description:</strong> ${info.event.extendedProps.description || 'No description'}
     `;
     
     showModal(info.event.title, content);
