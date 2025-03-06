@@ -266,7 +266,7 @@
     
 
 
-    // Agregar el manejador de clic a todos los elementos con clase view3
+    // Agregar el manejador de clic 
     document.querySelectorAll('.view3').forEach(boton => {
         boton.addEventListener("click", function() {
             // Obtener los datos usando jQuery
@@ -298,7 +298,7 @@
     e.preventDefault();
     const form = document.getElementById('eventForm');
     const formAction = form.getAttribute('action');
-    // Obtener datos del formulario
+    // Obtener datos
     const formData = {
         id_v: document.getElementById('id_v').value,
         description: document.getElementById('description').value,
@@ -308,14 +308,14 @@
         approved: document.getElementById('approved').checked
     };
 
-    // Validación completa de campos requeridos
+    // Validación 
     const validationErrors = validateFormFields(formData);
     if (validationErrors.length > 0) {
         alert(`Por favor corrige los siguientes errores:\n${validationErrors.join('\n')}`);
         return;
     }
 
-    // Validación específica de fechas
+    // Validación de fechas
     const dateValidation = validateDates(formData.start, formData.end);
     if (!dateValidation.isValid) {
         alert(dateValidation.error);
@@ -344,7 +344,7 @@
             const modalInstance = bootstrap.Modal.getInstance(document.getElementById('eventModal'));
             modalInstance.hide();
             
-            // Mostrar notificación de éxito
+            // Mostrar notificación 
             const toast = new bootstrap.Toast(document.getElementById('liveToast'));
             toast.show();
             
@@ -363,7 +363,7 @@
     }
 });
 
-// Funciones auxiliares para validación
+// Funciones  validación
 function validateFormFields(formData) {
     const errors = [];
     
@@ -408,7 +408,7 @@ function validateDates(startDateStr, endDateStr) {
     }
 }
 
-// Función para obtener el token CSRF
+// obtener el token CSRF
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -423,35 +423,32 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-});// Función para actualizar la URL con el tamaño de página
+});// Función para actualizar la URL 
 function updateEntries(value) {
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('page_size', value);
     
-    // Mantener otros parámetros
+    /
     const currentPage = urlParams.get('page') || '1';
     const currentStatus = urlParams.get('status');
     
-    // Actualizar la URL con todos los parámetros
+    // Actualizar la URL c
     const newUrl = `${window.location.pathname}?page=${currentPage}&page_size=${value}${currentStatus ? `&status=${currentStatus}` : ''}`;
     window.history.pushState({}, '', newUrl);
 
     window.location.reload();
 }
 
-// Función para actualizar el parámetro de estado (filter)
+// Función para actualizar el  (filter)
 function updateState(value) {
     const urlParams = new URLSearchParams(window.location.search);
     
-    // Si el valor es 'All', eliminar el parámetro 'status' de la URL
     if (value === "All") {
         urlParams.delete('status');
     } else {
-        // Si no, actualizar el valor del parámetro 'status'
         urlParams.set('status', value);
     }
 
-    // Mantener otros parámetros como 'page_size' y 'page'
     const currentPage = urlParams.get('page') || '1';
     const currentPageSize = urlParams.get('page_size') || '6';
     
@@ -461,7 +458,7 @@ function updateState(value) {
     window.location.reload();
 }
 
-// Detectar el cambio en el dropdown de estado
+// Detectar el cambio 
 document.getElementById('selecta2').addEventListener('change', function(e) {
     updateState(e.target.value);
 });
@@ -482,13 +479,13 @@ function updateEntrySelection() {
 // Función para seleccionar el estado correcto al cargar la página
 function updateEntrySelection2() {
     const urlParams = new URLSearchParams(window.location.search);
-    const state = urlParams.get('status'); // Cambié 'filter' por 'status'
+    const state = urlParams.get('status'); 
     const selectElement = document.getElementById('selecta2');
     
     if (state && selectElement) {
         selectElement.value = state;
     } else {
-        selectElement.selectedIndex = 0; // Valor por defecto (Any)
+        selectElement.selectedIndex = 0; 
     }
 }
 

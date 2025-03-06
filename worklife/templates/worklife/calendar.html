@@ -37,7 +37,7 @@
 
   </div>
 
-  <!-- Modal con formulario -->
+  <!-- Modal -->
 <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     
@@ -115,7 +115,7 @@
     const modal = new bootstrap.Modal(document.getElementById('eventModal'));
 
    
-    // Configuración del calendario con capacidad de selección
+    // Configuración del calendario 
     var calendar = new FullCalendar.Calendar(calendarEl, {
         themeSystem: 'bootstrap5',
         dayHeaderClassNames: 'custom-header',
@@ -134,7 +134,7 @@
 
   },
         select: function(info) {
-    // Limpiar el formulario antes de establecer valores
+    // Limpiar el formulario 
     document.getElementById('eventForm').reset();
     
     const startDate = new Date(
@@ -164,7 +164,7 @@
         );
       
     } else {
-        // Es un rango de días - mantenemos la fecha final como está
+        // Es un rango de días 
         endDate = new Date(
             Date.UTC(
                 info.end.getFullYear(),
@@ -179,7 +179,7 @@
         endDate.setUTCMinutes(59);
     }
     
-    // Formatear las fechas al formato ISO requerido por datetime-local
+    // Formatear las fechas 
     const startStr = startDate.toISOString().slice(0, 16);
     const endStr = endDate.toISOString().slice(0, 16);
     
@@ -235,13 +235,13 @@ document.getElementById('saveEvent').addEventListener('click', function() {
         description: document.getElementById('description').value
     };
 
-    // Validación completa de campos requeridos
+    // Validación de campos 
     if (!formData.start || !formData.end || !formData.type || !formData.description) {
         alert('Todos los campos son obligatorios');
         return;
     }
 
-    // Validación específica de fechas
+    // Validación de fechas
     let startDate, endDate;
     try {
         startDate = new Date(formData.start);

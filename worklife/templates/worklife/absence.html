@@ -84,16 +84,15 @@ color:rgb(0, 0, 0) !important;
 
     <script>
 
-         // Get the modal element
+         // Obtener la Modal
     const modal = new bootstrap.Modal(document.getElementById('eventModal'));
     
-    // Function to show modal
+    // Funcion   Mostrar la modal
     function showModal(title, content) {
         const modalElement = document.getElementById('eventModal');
         document.getElementById('modalTitle').textContent = title;
         document.getElementById('modalContent').innerHTML = content;
         
-        // Show the modal
         modal.show();
     }
     
@@ -102,7 +101,7 @@ color:rgb(0, 0, 0) !important;
     
  
     
-    // Initialize FullCalendar
+    // Inicializar  FullCalendar
     var calendar = new FullCalendar.Calendar(calendarEl, {
        themeSystem: 'bootstrap5',
        dayHeaderClassNames: 'custom-header', // Para encabezados
@@ -111,8 +110,7 @@ color:rgb(0, 0, 0) !important;
         headerToolbar: {
     left: 'prev,next',
     center: 'title',
-    right: 'timeGridDay,timeGridWeek,dayGridMonth' // Users can click these buttons to switch views
-  },
+    right: 'timeGridDay,timeGridWeek,dayGridMonth' // Botones Para Cambiar la Vista
         events:{{calendar_events| safe }},
         eventClick: function(info) {
             let content = `
@@ -148,7 +146,7 @@ color:rgb(0, 0, 0) !important;
 
 const toastTrigger = document.getElementById('liveToastBtn')
 const toastLiveExample = document.getElementById('liveToast')
-
+//toast
 if (toastTrigger) {
   const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
   toastTrigger.addEventListener('click', () => {

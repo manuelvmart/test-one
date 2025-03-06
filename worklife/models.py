@@ -13,6 +13,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 class WorkTimePeriod(models.Model):
+    """Modelo utilizado para almacenar los datos De el Periodo de Trabajo de un colaborador."""
     user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     date =  models.DateTimeField("WorkTime", auto_now_add=True)
 
@@ -34,6 +35,7 @@ class WorkTimePeriod(models.Model):
 
 
 class WorkTimeRecord(models.Model):
+    """Modelo utilizado para almacenar los datos De inicio de trabajo , descanso y fin de jornada. de Trabajo de un colaborador."""
     user = user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     period = models.ForeignKey(WorkTimePeriod, on_delete=models.CASCADE)
     datetime = models.DateTimeField("Time")
@@ -47,6 +49,7 @@ class WorkTimeRecord(models.Model):
     )
                 
 class WorkIncident(models.Model):
+                """Modelo utilizado para almacenar los datos De  las incidencias de un colaborador."""
                 user  = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
                 incident_type = models.CharField (choices=(("0", "Vacations"), ("2", "Delay"), ("3", "Unjustified absences"), ("4", "Justified absences"), ("5", "Maternity leave"), 
                                                            ("6", "Work Incapacity")),  max_length=1)
@@ -70,6 +73,7 @@ class WorkIncident(models.Model):
                     return f"{base_type} ({INCIDENT_TYPES.get(base_type, '')})"
 
 class VacationRequest(models.Model):
+                """Modelo utilizado para almacenar los datos De   las solicitudes de los colaboradores."""
                 incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE, null=True, blank=True)
                 user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
                 vacation_start = models.DateTimeField("VacationStartTime")
@@ -79,6 +83,7 @@ class VacationRequest(models.Model):
 
 @receiver(post_save, sender=VacationRequest)
 def save_post(sender, instance, **kwargs):
+    """Signals que se disparan despues de que un incidente corresponda  a una ausencia."""
     if hasattr(instance, 'incident') and instance.incident.incident_type == "3"  and instance.approved==True:
         logger.info("Tipo NO Justificado")
         AbsenceRegistry.objects.create(
@@ -104,6 +109,7 @@ def save_post(sender, instance, **kwargs):
 
 
 class AbsenceRegistry(models.Model):
+                """Modelo utilizado para almacenar los datos De   las  ausencias  los colaboradores."""
                 incident = models.ForeignKey(WorkIncident, on_delete=models.CASCADE, null=True, blank=True)
                 user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
                 absence_start =  models.DateTimeField("AbsenceStartTime")
