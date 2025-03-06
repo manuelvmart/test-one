@@ -15,6 +15,7 @@ from worklife.models import WorkIncident,WorkTimePeriod,WorkTimeRecord
 from django.views.decorators.csrf import csrf_exempt
 from .models import save_post
 from django.db.models import F
+import logging
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def index(request):
@@ -384,25 +385,23 @@ class CincidentsView(LoginRequiredMixin, generic.ListView):
 
 
 
-class RequestView(LoginRequiredMixin, generic.TemplateView):
-     template_name = "worklife/request.html"
-   
-     def get_context_data(self, **kwargs):
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+class RequestView(LoginRequiredMixin, generic.ListView):
+    template_name = "worklife/request.html"
+    model = VacationRequest
+    paginate_by = 6
+    context_object_name = 'vacation_requests'
+
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get page size from URL parameter, default to 6
         page_size = int(self.request.GET.get('page_size', 6))
+        vacation_requests = self.get_filtered_vacation_requests()
         
-        # Fetch vacation requests
-        vacation_requests = VacationRequest.objects.select_related('incident').order_by(
-            F('approved').asc(nulls_first=True), '-incident__incident_start')
-        
-        # Create paginator with dynamic page size
         paginator = Paginator(vacation_requests, page_size)
-        
-        # Get current page
         page_number = self.request.GET.get('page', 1)
-        
         try:
             page_obj = paginator.get_page(page_number)
         except PageNotAnInteger:
@@ -410,12 +409,39 @@ class RequestView(LoginRequiredMixin, generic.TemplateView):
         except EmptyPage:
             page_obj = paginator.get_page(paginator.num_pages)
         
-        # Add current page size to context for template
-        context['page_size'] = page_size
         context['vacation_requests'] = page_obj
         context['incidents'] = WorkIncident.objects.order_by('-incident_start').all()
+        context['page_size'] = page_size
+        
+        # Verificar si la solicitud es Ajax comprobando el encabezado HTTP_X_REQUESTED_WITH
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            # Si es una solicitud Ajax, devolver solo el HTML de la lista
+            return JsonResponse({
+                'html': render_to_string('worklife/request_list.html', context),
+                'page': page_obj.number,
+                'total_pages': paginator.num_pages,
+            })
         
         return context
+
+    def get_filtered_vacation_requests(self):
+        queryset = VacationRequest.objects.select_related('incident').order_by(
+            F('approved').asc(nulls_first=True), '-incident__incident_start'
+        )
+        
+        status = self.request.GET.get('status')
+        if status == 'None':
+            queryset = queryset.filter(approved=None)
+        elif status == 'False':
+            queryset = queryset.filter(approved=False)
+        elif status == 'True':
+            queryset = queryset.filter(approved=True)
+        elif status == 'All':
+            queryset = queryset.all()
+        
+        return queryset
+
+
 
             
 def set_not(request, incident_id, vacationrequest_id):

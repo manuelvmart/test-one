@@ -285,11 +285,11 @@
                        
                         <div class="filter-group">
                             <label>Status</label>
-                            <select class="form-control">
-                                <option>Any</option>
+                            <select class="form-control" onchange="updateState(this.value)" id="selecta2">
+                                <option value="All">Any</option>
                                 <option value="None">Pending</option>
-                                <option value="False">Approved</option>
-                                <option value="True">Rejected</option>
+                                <option value="True">Approved</option>
+                                <option value="False">Rejected</option>
                             </select>
                         </div>
                         <span class="filter-icon"><i class="fa fa-filter"></i></span>
@@ -660,36 +660,78 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-});
-
+});// Función para actualizar la URL con el tamaño de página
 function updateEntries(value) {
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('page_size', value);
-    window.location.search = urlParams.toString();
     
-    // Add this line to preserve the current page number
+    // Mantener otros parámetros
     const currentPage = urlParams.get('page') || '1';
-    window.location.href = `${window.location.pathname}?page=${currentPage}&page_size=${value}`;
+    const currentStatus = urlParams.get('status');
+    
+    // Actualizar la URL con todos los parámetros
+    const newUrl = `${window.location.pathname}?page=${currentPage}&page_size=${value}${currentStatus ? `&status=${currentStatus}` : ''}`;
+    window.history.pushState({}, '', newUrl);
+
+    window.location.reload();
 }
 
+// Función para actualizar el parámetro de estado (filter)
+function updateState(value) {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Si el valor es 'All', eliminar el parámetro 'status' de la URL
+    if (value === "All") {
+        urlParams.delete('status');
+    } else {
+        // Si no, actualizar el valor del parámetro 'status'
+        urlParams.set('status', value);
+    }
 
+    // Mantener otros parámetros como 'page_size' y 'page'
+    const currentPage = urlParams.get('page') || '1';
+    const currentPageSize = urlParams.get('page_size') || '6';
+    
+    // Actualizar la URL con los parámetros
+    const newUrl = `${window.location.pathname}?page=${currentPage}&page_size=${currentPageSize}${urlParams.has('status') ? `&status=${value}` : ''}`;
+    window.history.pushState({}, '', newUrl);
+    window.location.reload();
+}
+
+// Detectar el cambio en el dropdown de estado
+document.getElementById('selecta2').addEventListener('change', function(e) {
+    updateState(e.target.value);
+});
+
+// Función para seleccionar el tamaño de página correcto
 function updateEntrySelection() {
     const urlParams = new URLSearchParams(window.location.search);
     const pageSize = urlParams.get('page_size');
-    
-    // Get select element
     const selectElement = document.getElementById('selecta');
     
-    // Update selected option
     if (pageSize && selectElement) {
         selectElement.value = pageSize;
     } else {
-        // Default to first option if no page_size parameter
         selectElement.selectedIndex = 0;
     }
 }
 
-// Call updateEntrySelection when page loads
+// Función para seleccionar el estado correcto al cargar la página
+function updateEntrySelection2() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const state = urlParams.get('status'); // Cambié 'filter' por 'status'
+    const selectElement = document.getElementById('selecta2');
+    
+    if (state && selectElement) {
+        selectElement.value = state;
+    } else {
+        selectElement.selectedIndex = 0; // Valor por defecto (Any)
+    }
+}
+
+// Llamar las funciones cuando la página se cargue
 document.addEventListener('DOMContentLoaded', updateEntrySelection);
+document.addEventListener('DOMContentLoaded', updateEntrySelection2);
+
 </script>
 {% endblock %}
