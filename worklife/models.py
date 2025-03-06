@@ -1,15 +1,16 @@
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.db.models.signals import post_save,pre_save
-# Create your models here.
 import logging
+from django.db import models
+from django.dispatch import receiver
+from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
+
+#nuevo Log para imprimir en terminal
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-from django.dispatch import receiver
 
 class WorkTimePeriod(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)

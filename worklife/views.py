@@ -1,7 +1,6 @@
 """Vista para manejo de acciones de inciencias de nomina"""
-from datetime import timedelta
+
 import json
-from urllib import response
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
@@ -9,14 +8,13 @@ from django.shortcuts import  get_object_or_404, render
 from django.views import generic
 from django.http.response import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models.signals import post_save,pre_save
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import F
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from worklife.models import VacationRequest,AbsenceRegistry
 from worklife.models import WorkIncident,WorkTimePeriod,WorkTimeRecord
-from django.views.decorators.csrf import csrf_exempt
-from .models import save_post
-from django.db.models import F
-import logging
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 def index(request):
   return render(request, "worklife/index.html")
@@ -193,6 +191,7 @@ class CalendarView(LoginRequiredMixin, generic.TemplateView):
             }, status=500)
 
 class IncidentsView(LoginRequiredMixin, generic.ListView):
+    """Vista para Visualizar las incidencias que tiene el trabajador"""
     template_name = "worklife/incidents.html"
     
     def get_queryset(self):
@@ -239,6 +238,7 @@ class IncidentsView(LoginRequiredMixin, generic.ListView):
 
 
 class AbsencesView(LoginRequiredMixin, generic.ListView):
+            """Vista para Visualizar las Aunsencias de los colaboradores"""
             template_name = "worklife/absence.html"
             
             def get_queryset(self):
@@ -284,6 +284,7 @@ class AbsencesView(LoginRequiredMixin, generic.ListView):
     
 
 class VacationsView(LoginRequiredMixin, generic.ListView):
+            """Vista para Visualizar las vacacciones  de los colaboradores"""
             template_name = "worklife/vacations.html"
             
             def get_queryset(self):
@@ -336,6 +337,7 @@ class VacationsView(LoginRequiredMixin, generic.ListView):
 
 
 class CincidentsView(LoginRequiredMixin, generic.ListView):
+            """Vista para Visualizar las  Incidencias de los colaboradores"""
             template_name = "worklife/cincidents.html"
             
             def get_queryset(self):
@@ -385,10 +387,10 @@ class CincidentsView(LoginRequiredMixin, generic.ListView):
 
 
 
-from django.http import JsonResponse
-from django.template.loader import render_to_string
+
 
 class RequestView(LoginRequiredMixin, generic.ListView):
+    """Vista para  Manejar las Solicitudes de Incidencias de los colaboradores"""
     template_name = "worklife/request.html"
     model = VacationRequest
     paginate_by = 6
@@ -590,6 +592,7 @@ def get_workday_end(request):
 
 
 class CollaboratorView(LoginRequiredMixin, generic.ListView):
+            """Vista para  Visualizar Los periodos de Trabajo de los Colaboradores."""
             template_name = "worklife/collaborator.html"
             
             def get_queryset(self):
